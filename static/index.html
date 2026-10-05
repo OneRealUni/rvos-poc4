@@ -3,63 +3,105 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
 <title>RVOS novelty check</title>
 <style>
   :root {
-    --bg: #fafaf8; --fg: #1d1d1b; --muted: #6b6b66; --card: #ffffff;
-    --line: #dcdcd5; --accent: #1f5fbf; --accent-fg: #ffffff; --err: #b3261e;
+    color-scheme: dark;
+    --bg: #0b1020; --fg: #e8ecf7; --muted: #9aa6c4; --card: #121a2e;
+    --line: #232d47; --link: #9fb0ff; --err: #ff8a8a;
+    --grad: linear-gradient(135deg, #4f46e5, #7c3aed);
+    --btn-fg: #ffffff; --focus: #22d3ee;
   }
-  @media (prefers-color-scheme: dark) {
+  @media (prefers-color-scheme: light) {
     :root {
-      --bg: #161616; --fg: #ececea; --muted: #a0a09a; --card: #202020;
-      --line: #3a3a37; --accent: #6ea0f0; --accent-fg: #101010; --err: #f2867e;
+      color-scheme: light;
+      --bg: #f6f7fb; --fg: #14182a; --muted: #5a6481; --card: #ffffff;
+      --line: #dfe3ef; --link: #4338ca; --err: #b3261e;
+      --focus: #0891b2;
     }
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg);
-         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
-  h1 { font-size: 1.5rem; margin: 0 0 4px; }
-  h2 { font-size: 1.05rem; margin: 28px 0 6px; }
-  .lede, .notice { color: var(--muted); }
-  .notice { font-size: 0.875rem; margin: 8px 0 16px; }
-  form { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
-  input[type=file] { display: block; margin-bottom: 12px; max-width: 100%; }
-  button { background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 8px;
-           padding: 10px 18px; font: inherit; cursor: pointer; }
+         font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 48px 16px 80px; }
+  h1 { font-size: 1.75rem; line-height: 1.2; letter-spacing: -0.01em; margin: 0 0 8px; }
+  h2 { font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+       color: var(--muted); margin: 28px 0 8px; }
+  .lede { color: var(--muted); margin: 0 0 28px; }
+  .notice { color: var(--muted); font-size: 0.875rem; margin: 16px 0 0; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+  input[type=file] { display: block; width: 100%; margin-bottom: 16px; color: var(--muted);
+                     padding: 14px; border: 1px dashed var(--line); border-radius: 12px; font: inherit; }
+  input[type=file]::file-selector-button { margin-right: 12px; padding: 8px 14px; border: 1px solid var(--line);
+                     border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; cursor: pointer; }
+
+  button { font: inherit; font-weight: 600; border-radius: 10px; padding: 11px 20px; cursor: pointer; }
+  button.primary { background: var(--grad); color: var(--btn-fg); border: 0; }
+  button.secondary { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+  button.secondary:hover { border-color: var(--muted); }
   button:disabled { opacity: 0.55; cursor: progress; }
-  #status { margin-top: 12px; color: var(--muted); }
-  #error { margin-top: 12px; color: var(--err); }
-  #report { margin-top: 8px; }
-  .verdict { white-space: pre-wrap; background: var(--card); border: 1px solid var(--line);
-             border-radius: 10px; padding: 14px 16px; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  #status { display: flex; align-items: center; gap: 10px; margin-top: 16px; color: var(--muted); }
+  #status::before { content: ""; width: 16px; height: 16px; flex: none; border-radius: 50%;
+                    border: 2px solid var(--line); border-top-color: var(--focus);
+                    animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { #status::before { animation: none; } }
+  #error { margin-top: 16px; color: var(--err); }
+
+  #report { margin-top: 32px; }
+  .verdict-card { border: 1.5px solid transparent; border-radius: 16px; padding: 22px 24px;
+                  background: linear-gradient(var(--card), var(--card)) padding-box, var(--grad) border-box; }
+  .verdict-card h2 { margin-top: 0; }
+  .verdict { white-space: pre-wrap; font-size: 1.125rem; line-height: 1.6; overflow-wrap: anywhere; }
+  #details-toggle { margin-top: 16px; }
+
+  #details { margin-top: 8px; }
+  #details p { margin: 0; overflow-wrap: anywhere; }
   ol.related { padding-left: 0; list-style: none; margin: 0; }
-  ol.related li { padding: 6px 0; border-bottom: 1px solid var(--line); }
+  ol.related li { padding: 8px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
   ol.related li.no-abstract { color: var(--muted); }
   ol.related .n { display: inline-block; min-width: 2.2em; color: var(--muted); }
-  a { color: var(--accent); }
+  a { color: var(--link); }
   [hidden] { display: none !important; }
+
+  @media (max-width: 480px) {
+    main { padding-top: 32px; }
+    button { width: 100%; }
+    .card { padding: 16px; }
+    .verdict-card { padding: 18px; }
+  }
 </style>
 </head>
 <body>
 <main>
   <h1>RVOS novelty check</h1>
-  <p class="lede">Upload a paper (.pdf, .docx or .txt) to see its claim and how novel it looks against related work.</p>
+  <p class="lede">Upload a paper (.pdf, .docx or .txt) to see how novel its claim looks against related work.</p>
 
-  <form id="form">
-    <input type="file" id="file" name="file" accept=".pdf,.docx,.txt" required>
-    <button type="submit" id="go">Assess novelty</button>
+  <form id="form" class="card">
+    <input type="file" id="file" name="file" accept=".pdf,.docx,.txt" required aria-label="Paper to assess">
+    <button type="submit" id="go" class="primary">Assess novelty</button>
     <p class="notice">The first 12,000 characters are sent to Anthropic's API and search keywords to OpenAlex. Nothing is saved by this app.</p>
     <div id="status" role="status" hidden></div>
     <div id="error" role="alert" hidden></div>
   </form>
 
   <section id="report" hidden>
-    <h2>Claim</h2><p id="claim"></p>
-    <h2>Method</h2><p id="method"></p>
-    <h2>Stated result</h2><p id="result"></p>
-    <h2>Related work</h2><ol class="related" id="related"></ol>
-    <h2>Novelty verdict</h2><div class="verdict" id="verdict"></div>
+    <div class="verdict-card">
+      <h2>Verdict</h2>
+      <div class="verdict" id="verdict"></div>
+    </div>
+    <button type="button" id="details-toggle" class="secondary" aria-expanded="false" aria-controls="details">Show details</button>
+
+    <div id="details" hidden>
+      <h2>Claim</h2><p id="claim"></p>
+      <h2>Method</h2><p id="method"></p>
+      <h2>Stated result</h2><p id="result"></p>
+      <h2>Related work</h2><ol class="related" id="related"></ol>
+    </div>
   </section>
 </main>
 
@@ -70,6 +112,16 @@ function show(el, text) {
   el.textContent = text || "";
   el.hidden = !text;
 }
+
+function setDetails(open) {
+  $("details").hidden = !open;
+  $("details-toggle").setAttribute("aria-expanded", String(open));
+  $("details-toggle").textContent = open ? "Hide details" : "Show details";
+}
+
+$("details-toggle").addEventListener("click", () => {
+  setDetails($("details").hidden);
+});
 
 function renderReport(r) {
   $("claim").textContent = r.claim;
@@ -112,6 +164,7 @@ $("form").addEventListener("submit", async (e) => {
   go.disabled = true;
   show($("error"), "");
   $("report").hidden = true;
+  setDetails(false);
   show($("status"), "Working… this takes about a minute.");
 
   try {

@@ -166,3 +166,10 @@ def test_index_page_is_served(client):
     r = client.get("/")
     assert r.status_code == 200
     assert "text/html" in r.headers["content-type"]
+
+
+def test_index_page_has_details_toggle_and_container(client):
+    html = client.get("/").text
+    assert 'id="details-toggle"' in html
+    assert 'aria-controls="details"' in html
+    assert 'id="details"' in html
