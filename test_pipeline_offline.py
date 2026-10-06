@@ -383,3 +383,37 @@ def test_load_paper_text_reads_docx_table_cells():
         doc.save(str(path))
         text = rp.load_paper_text(str(path))
     assert "Real paper text in a table" in text
+
+
+# ---------------------------------------------------------------------------
+# judge_novelty -- verdict length (F7)
+# ---------------------------------------------------------------------------
+
+
+def _judge_prompt(monkeypatch):
+    seen = {}
+
+    def fake_create(**kwargs):
+        seen.update(kwargs)
+        return _fake_resp("A verdict.")
+
+    monkeypatch.setattr(rp.client.messages, "create", fake_create)
+    rp.judge_novelty({"claim": "c", "method": "m", "result": "r"}, [])
+    return seen["messages"][0]["content"]
+
+
+def test_judge_novelty_prompt_uses_the_configured_verdict_length(monkeypatch):
+    monkeypatch.setattr(rp, "VERDICT_WORDS_MIN", 7)
+    monkeypatch.setattr(rp, "VERDICT_WORDS_MAX", 9)
+    assert "- Write 7-9 words of plain prose, not JSON." in _judge_prompt(monkeypatch)
+
+
+def test_verdict_length_default_is_the_validated_150_to_250():
+    # A 60-100 word range was tried (P4-02, 2026-10-07) and changed the
+    # judgment: the live novel-fixture verdicts said "overlaps significantly".
+    # Change these defaults only together with a live before/after check.
+    assert (rp.VERDICT_WORDS_MIN, rp.VERDICT_WORDS_MAX) == (150, 250)
+
+
+def test_default_judge_prompt_still_says_150_to_250_words(monkeypatch):
+    assert "- Write 150-250 words of plain prose, not JSON." in _judge_prompt(monkeypatch)

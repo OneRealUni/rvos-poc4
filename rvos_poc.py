@@ -31,6 +31,11 @@ load_dotenv()
 client = Anthropic()  # reads ANTHROPIC_API_KEY from the environment
 MODEL = "claude-sonnet-5"  # cheap and sufficient for this step; only escalate if judgment quality is weak in your reading
 REQUIRED_KEYS = {"claim", "method", "result", "keywords"}
+# Verdict length asked of the judge (F7). Shipped at the validated 150-250: a
+# 60-100 range was tried and changed the judgment on the novel fixture (it said
+# "overlaps significantly"). Change only with a live before/after check.
+VERDICT_WORDS_MIN = 150
+VERDICT_WORDS_MAX = 250
 
 def _response_text(resp) -> str:
     """Sonnet 5 can prepend a ThinkingBlock before the text block, so
@@ -169,7 +174,7 @@ Instructions:
 - Judge whether the claim appears novel, overlaps significantly with specific retrieved work, or whether there is insufficient evidence to judge.
 - If you say something overlaps, name the SPECIFIC numbered source it overlaps with. Never make a vague claim without pointing to a numbered source.
 - If the retrieved evidence is thin, unrelated, or abstracts are empty, say "insufficient evidence" explicitly rather than guessing. This is the single most important instruction in this prompt -- do not fabricate a confident verdict from weak evidence.
-- Write 150-250 words of plain prose, not JSON.
+- Write {VERDICT_WORDS_MIN}-{VERDICT_WORDS_MAX} words of plain prose, not JSON.
 """
     resp = client.messages.create(
         model=MODEL,
