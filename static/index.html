@@ -58,6 +58,9 @@
                   background: linear-gradient(var(--card), var(--card)) padding-box, var(--grad) border-box; }
   .verdict-card h2 { margin-top: 0; }
   .verdict { white-space: pre-wrap; font-size: 1.125rem; line-height: 1.6; overflow-wrap: anywhere; }
+  .verdict.clamped { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6;
+                     line-clamp: 6; overflow: hidden; }
+  button.linklike { width: auto; background: none; border: 0; padding: 6px 0 0; color: var(--link); }
   .cited { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
   .cited h2 { margin: 0 0 4px; }
   .cited ol.related li:last-child { border-bottom: 0; }
@@ -97,6 +100,7 @@
     <div class="verdict-card">
       <h2>Verdict</h2>
       <div class="verdict" id="verdict"></div>
+      <button type="button" id="verdict-toggle" class="linklike" aria-expanded="false" aria-controls="verdict" hidden>Read more</button>
       <div class="cited" id="cited" hidden>
         <h2>Cited in the verdict</h2>
         <ol class="related" id="cited-list"></ol>
@@ -129,6 +133,28 @@ function setDetails(open) {
 
 $("details-toggle").addEventListener("click", () => {
   setDetails($("details").hidden);
+});
+
+function setVerdictExpanded(open) {
+  $("verdict").classList.toggle("clamped", !open);
+  $("verdict-toggle").setAttribute("aria-expanded", String(open));
+  $("verdict-toggle").textContent = open ? "Show less" : "Read more";
+}
+
+// A long verdict is clamped to a few lines; offer "Read more" only when the
+// clamped text really is cut off. Re-checked on resize while collapsed.
+function updateVerdictToggle() {
+  const verdict = $("verdict"), toggle = $("verdict-toggle");
+  if (toggle.getAttribute("aria-expanded") === "true") return;
+  verdict.classList.add("clamped");
+  toggle.hidden = !(verdict.scrollHeight > verdict.clientHeight + 1);
+}
+
+$("verdict-toggle").addEventListener("click", () => {
+  setVerdictExpanded($("verdict-toggle").getAttribute("aria-expanded") !== "true");
+});
+window.addEventListener("resize", () => {
+  if (!$("report").hidden) updateVerdictToggle();
 });
 
 function workItem(w) {
@@ -175,6 +201,8 @@ function renderReport(r) {
   $("cited").hidden = cited.length === 0;
 
   $("report").hidden = false;
+  setVerdictExpanded(false);
+  updateVerdictToggle();
 }
 
 $("form").addEventListener("submit", async (e) => {

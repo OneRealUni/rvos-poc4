@@ -181,6 +181,12 @@ def test_index_page_shows_cited_works_under_the_verdict(client):
     assert 'id="cited-list"' in html
 
 
+def test_index_page_clamps_a_long_verdict_with_a_read_more_toggle(client):
+    html = client.get("/").text
+    assert 'id="verdict-toggle"' in html
+    assert 'aria-controls="verdict"' in html
+
+
 def test_index_page_has_inline_favicon_and_accurate_wait_text(client):
     html = client.get("/").text
     assert 'rel="icon"' in html

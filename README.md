@@ -65,8 +65,9 @@ press "Assess novelty". A run takes roughly 10 to 60 seconds. The page
 shows the Verdict, with the related works it cites by number (for example
 "[2]") listed under it. Press "Show details" for the same Report as the
 command line (claim, method, stated result, related work). The Verdict is
-the model's text as written, so it can run to several paragraphs. Nothing is
-saved: the upload goes to a temp file that is
+the model's text as written, so it can run to several paragraphs; the page
+shows the first six lines and a "Read more" button when the text is longer.
+Nothing is saved: the upload goes to a temp file that is
 deleted straight away, and the report is not written anywhere. Related works
 with no abstract are greyed out because the verdict never saw them. Uploads
 over 10 MB are rejected. This is a demo: it has no login and should only be
@@ -87,7 +88,7 @@ Anthropic credit and OpenAlex quota. CI has neither, so there they skip.
 `test_repo_hygiene.py` need no API key or NDA files (`test_loading.py`
 generates tiny PDF/DOCX files on the fly; `test_app.py` replaces the
 pipeline with a fake; `test_pipeline_offline.py` mocks the model and
-OpenAlex). CI shows 50 passed and 5 skipped. `test_rvos_poc.py` calls the
+OpenAlex). CI shows 54 passed and 5 skipped. `test_rvos_poc.py` calls the
 live Anthropic and OpenAlex APIs and needs two local NDA fixture papers: set
 their paths in `.env` as `RVOS_FIXTURE_OVERLAP` (a near-duplicate of a
 published paper) and `RVOS_FIXTURE_NOVEL` (unpublished work), relative to
