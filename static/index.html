@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <title>RVOS novelty check</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234f46e5'/%3E%3Cstop offset='1' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3C/svg%3E">
 <style>
   :root {
     color-scheme: dark;
@@ -57,6 +58,9 @@
                   background: linear-gradient(var(--card), var(--card)) padding-box, var(--grad) border-box; }
   .verdict-card h2 { margin-top: 0; }
   .verdict { white-space: pre-wrap; font-size: 1.125rem; line-height: 1.6; overflow-wrap: anywhere; }
+  .cited { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .cited h2 { margin: 0 0 4px; }
+  .cited ol.related li:last-child { border-bottom: 0; }
   #details-toggle { margin-top: 16px; }
 
   #details { margin-top: 8px; }
@@ -93,6 +97,10 @@
     <div class="verdict-card">
       <h2>Verdict</h2>
       <div class="verdict" id="verdict"></div>
+      <div class="cited" id="cited" hidden>
+        <h2>Cited in the verdict</h2>
+        <ol class="related" id="cited-list"></ol>
+      </div>
     </div>
     <button type="button" id="details-toggle" class="secondary" aria-expanded="false" aria-controls="details">Show details</button>
 
@@ -123,6 +131,35 @@ $("details-toggle").addEventListener("click", () => {
   setDetails($("details").hidden);
 });
 
+function workItem(w) {
+  const li = document.createElement("li");
+  if (!w.has_abstract) li.className = "no-abstract";
+
+  const n = document.createElement("span");
+  n.className = "n";
+  n.textContent = "[" + w.n + "]";
+  li.append(n);
+
+  const label = (w.title || "(untitled)") + " (" + w.year + ")";
+  if (typeof w.url === "string" && w.url.startsWith("https://")) {
+    const a = document.createElement("a");
+    a.href = w.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+    a.textContent = label;
+    li.append(a);
+  } else {
+    li.append(label);
+  }
+  if (!w.has_abstract) li.append(" — no abstract, not assessed");
+  return li;
+}
+
+// The related works the verdict cites by number ("[2]"): looked up in the
+// related-work list, so numbers that match no work are ignored.
+function citedWorks(verdict, related) {
+  const numbers = new Set(Array.from(verdict.matchAll(/\[(\d+)\]/g), (m) => Number(m[1])));
+  return related.filter((w) => numbers.has(w.n));
+}
+
 function renderReport(r) {
   $("claim").textContent = r.claim;
   $("method").textContent = r.method;
@@ -131,27 +168,12 @@ function renderReport(r) {
 
   const list = $("related");
   list.replaceChildren();
-  for (const w of r.related) {
-    const li = document.createElement("li");
-    if (!w.has_abstract) li.className = "no-abstract";
+  for (const w of r.related) list.append(workItem(w));
 
-    const n = document.createElement("span");
-    n.className = "n";
-    n.textContent = "[" + w.n + "]";
-    li.append(n);
+  const cited = citedWorks(r.verdict, r.related);
+  $("cited-list").replaceChildren(...cited.map(workItem));
+  $("cited").hidden = cited.length === 0;
 
-    const label = (w.title || "(untitled)") + " (" + w.year + ")";
-    if (typeof w.url === "string" && w.url.startsWith("https://")) {
-      const a = document.createElement("a");
-      a.href = w.url; a.target = "_blank"; a.rel = "noopener noreferrer";
-      a.textContent = label;
-      li.append(a);
-    } else {
-      li.append(label);
-    }
-    if (!w.has_abstract) li.append(" — no abstract, not assessed");
-    list.append(li);
-  }
   $("report").hidden = false;
 }
 
@@ -165,7 +187,7 @@ $("form").addEventListener("submit", async (e) => {
   show($("error"), "");
   $("report").hidden = true;
   setDetails(false);
-  show($("status"), "Working… this takes about a minute.");
+  show($("status"), "Working… this usually takes under a minute.");
 
   try {
     const body = new FormData();

@@ -173,3 +173,15 @@ def test_index_page_has_details_toggle_and_container(client):
     assert 'id="details-toggle"' in html
     assert 'aria-controls="details"' in html
     assert 'id="details"' in html
+
+
+def test_index_page_shows_cited_works_under_the_verdict(client):
+    html = client.get("/").text
+    assert 'id="cited"' in html
+    assert 'id="cited-list"' in html
+
+
+def test_index_page_has_inline_favicon_and_accurate_wait_text(client):
+    html = client.get("/").text
+    assert 'rel="icon"' in html
+    assert "about a minute" not in html

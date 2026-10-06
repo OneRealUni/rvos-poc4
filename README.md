@@ -6,9 +6,10 @@ route and the CI are unchanged (see CLAUDE.md).
 ## What's new in POC4
 - A dark-first page (with a light variant that follows your system setting)
   and a clearer layout, in plain HTML/CSS/JS with no external assets.
-- After a run the page shows the novelty Verdict first. A "Show details"
-  button reveals the Claim, Method, Stated result and numbered Related work,
-  and hides them again. The details are collapsed at the start of each run.
+- After a run the page shows the novelty Verdict first, with the related
+  works it cites listed underneath. A "Show details" button reveals the
+  Claim, Method, Stated result and numbered Related work, and hides them
+  again. The details are collapsed at the start of each run.
 - The live tests read their NDA fixture paths from `.env` instead of naming
   the papers in the repo (see Tests below).
 - Nothing else changed in the app: `static/index.html` and one test in
@@ -61,11 +62,11 @@ on a browser refresh; changes to the Python files need a restart.
 
 Then open http://127.0.0.1:8000, choose a .pdf, .docx or .txt paper and
 press "Assess novelty". A run takes roughly 10 to 60 seconds. The page
-shows the Verdict. Press "Show details" for the same Report as the command
-line (claim, method, stated result, related work). The Verdict is the
-model's text as written, so it can run to several paragraphs, and it cites
-related work by number (for example "[2]"); open the details to see which
-work that is. Nothing is saved: the upload goes to a temp file that is
+shows the Verdict, with the related works it cites by number (for example
+"[2]") listed under it. Press "Show details" for the same Report as the
+command line (claim, method, stated result, related work). The Verdict is
+the model's text as written, so it can run to several paragraphs. Nothing is
+saved: the upload goes to a temp file that is
 deleted straight away, and the report is not written anywhere. Related works
 with no abstract are greyed out because the verdict never saw them. Uploads
 over 10 MB are rejected. This is a demo: it has no login and should only be
@@ -86,7 +87,7 @@ Anthropic credit and OpenAlex quota. CI has neither, so there they skip.
 `test_repo_hygiene.py` need no API key or NDA files (`test_loading.py`
 generates tiny PDF/DOCX files on the fly; `test_app.py` replaces the
 pipeline with a fake; `test_pipeline_offline.py` mocks the model and
-OpenAlex). CI shows 48 passed and 5 skipped. `test_rvos_poc.py` calls the
+OpenAlex). CI shows 50 passed and 5 skipped. `test_rvos_poc.py` calls the
 live Anthropic and OpenAlex APIs and needs two local NDA fixture papers: set
 their paths in `.env` as `RVOS_FIXTURE_OVERLAP` (a near-duplicate of a
 published paper) and `RVOS_FIXTURE_NOVEL` (unpublished work), relative to

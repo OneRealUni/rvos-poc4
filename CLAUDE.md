@@ -66,7 +66,8 @@ interface.
    build tooling, no external assets (system fonts, no CDN). No MCP.
 2. Dark-first theme with a light variant (prefers-color-scheme); colours are
    custom properties on :root.
-3. After a run the page shows the Verdict card only. A "Show details" button
+3. After a run the page shows the Verdict card only, with the related works
+   the Verdict cites by number ("[2]") listed under it. A "Show details" button
    (aria-expanded, aria-controls) reveals Claim, Method, Stated result and the
    numbered Related work; the details collapse again at the start of each run.
 4. The Verdict is shown as written. It is free text, so it is not parsed into
@@ -77,8 +78,10 @@ interface.
 6. Security properties kept: model- and paper-derived text is rendered with
    textContent, and only https:// URLs are linked, with
    rel="noopener noreferrer".
-7. The only added test: test_app.py checks that the served page has the
-   details toggle and its container.
+7. The added tests are in test_app.py: the served page has the details toggle
+   and container, the cited-works block, an inline favicon, and no stale wait
+   text. Behaviour is checked in a real browser against a stubbed pipeline
+   (there is no JS test runner, by design).
 
 ## Explicit non-goals for this increment
 - No production concerns: no auth, no multi-user handling, no
@@ -102,7 +105,7 @@ test_rvos_poc.py already skips cleanly (not crashes) when they're missing
 SKIPPED, not PASSED — that's expected, not a bug. test_loading.py uses
 synthetic files generated in tmp_path, test_pipeline_offline.py mocks the
 model and OpenAlex, and test_app.py fakes the graph, so all three PASS in CI.
-At POC4 CI should show 48 passed, 5 skipped (the fifth skip is the
+At POC4 CI should show 50 passed, 5 skipped (the fifth skip is the
 test_repo_hygiene.py scan, which needs `.env`). CI verifies the code
 imports, lints cleanly, loads PDF/DOCX/txt correctly, and that the web
 routes behave; it does not verify reasoning correctness. No
