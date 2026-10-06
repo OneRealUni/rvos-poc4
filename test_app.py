@@ -56,6 +56,7 @@ def test_txt_upload_returns_report(client):
     assert body["method"] == "A method."
     assert body["result"] == "A result."
     assert body["verdict"] == "Overlaps with [1]."
+    assert body["truncated"] is False
     assert "keywords" not in body
 
 
@@ -65,6 +66,11 @@ def test_related_work_is_numbered_and_flags_missing_abstracts(client):
         {"n": 1, "title": "Paper A", "year": 2020, "url": "https://openalex.org/W1", "has_abstract": True},
         {"n": 2, "title": "Paper B", "year": 2021, "url": "https://openalex.org/W2", "has_abstract": False},
     ]
+
+
+def test_response_flags_a_paper_longer_than_the_assessed_limit(client, monkeypatch):
+    monkeypatch.setattr(app_module, "MAX_PAPER_CHARS", 5)
+    assert _upload(client, "paper.txt", b"Some paper text.").json()["truncated"] is True
 
 
 def test_docx_upload_is_loaded_and_fed_to_the_pipeline(client, tmp_path, monkeypatch):
@@ -179,6 +185,10 @@ def test_index_page_shows_cited_works_under_the_verdict(client):
     html = client.get("/").text
     assert 'id="cited"' in html
     assert 'id="cited-list"' in html
+
+
+def test_index_page_has_a_truncation_note(client):
+    assert 'id="truncation-note"' in client.get("/").text
 
 
 def test_index_page_clamps_a_long_verdict_with_a_read_more_toggle(client):

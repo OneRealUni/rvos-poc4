@@ -100,6 +100,7 @@
     <div class="verdict-card">
       <h2>Verdict</h2>
       <div class="verdict" id="verdict"></div>
+      <p class="notice" id="truncation-note" hidden>Only the first 12,000 characters of this paper were assessed.</p>
       <button type="button" id="verdict-toggle" class="linklike" aria-expanded="false" aria-controls="verdict" hidden>Read more</button>
       <div class="cited" id="cited" hidden>
         <h2>Cited in the verdict</h2>
@@ -191,6 +192,7 @@ function renderReport(r) {
   $("method").textContent = r.method;
   $("result").textContent = r.result;
   $("verdict").textContent = r.verdict;
+  $("truncation-note").hidden = !r.truncated;
 
   const list = $("related");
   list.replaceChildren();

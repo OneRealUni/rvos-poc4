@@ -12,8 +12,9 @@ route and the CI are unchanged (see CLAUDE.md).
   again. The details are collapsed at the start of each run.
 - The live tests read their NDA fixture paths from `.env` instead of naming
   the papers in the repo (see Tests below).
-- Nothing else changed in the app: `static/index.html` and one test in
-  `test_app.py`. The `/analyse` response is the same as in POC3.
+- The page and the written report now say when a paper is longer than the
+  12,000 characters that are assessed. The `/analyse` response gains one
+  field, `truncated`; its other fields are the same as in POC3.
 
 ## Setup (about 5 minutes)
 
@@ -88,7 +89,7 @@ Anthropic credit and OpenAlex quota. CI has neither, so there they skip.
 `test_repo_hygiene.py` need no API key or NDA files (`test_loading.py`
 generates tiny PDF/DOCX files on the fly; `test_app.py` replaces the
 pipeline with a fake; `test_pipeline_offline.py` mocks the model and
-OpenAlex). CI shows 54 passed and 5 skipped. `test_rvos_poc.py` calls the
+OpenAlex). CI shows 60 passed and 5 skipped. `test_rvos_poc.py` calls the
 live Anthropic and OpenAlex APIs and needs two local NDA fixture papers: set
 their paths in `.env` as `RVOS_FIXTURE_OVERLAP` (a near-duplicate of a
 published paper) and `RVOS_FIXTURE_NOVEL` (unpublished work), relative to

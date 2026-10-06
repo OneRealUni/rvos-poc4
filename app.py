@@ -19,7 +19,13 @@ import requests
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
-from rvos_poc import PaperLoadError, build_graph, load_paper_text
+from rvos_poc import (
+    MAX_PAPER_CHARS,
+    PaperLoadError,
+    build_graph,
+    load_paper_text,
+    numbered_related,
+)
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 INDEX_PAGE = Path(__file__).parent / "static" / "index.html"
@@ -88,13 +94,14 @@ def analyse(file: UploadFile):
         "result": extracted["result"],
         "related": [
             {
-                "n": i + 1,
+                "n": n,
                 "title": w["title"],
                 "year": w["year"],
                 "url": w["id"],
                 "has_abstract": bool(w["abstract"]),
             }
-            for i, w in enumerate(result["related"])
+            for n, w in numbered_related(result["related"])
         ],
         "verdict": result["verdict"],
+        "truncated": len(paper_text) > MAX_PAPER_CHARS,
     }

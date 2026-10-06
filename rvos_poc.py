@@ -31,6 +31,8 @@ load_dotenv()
 client = Anthropic()  # reads ANTHROPIC_API_KEY from the environment
 MODEL = "claude-sonnet-5"  # cheap and sufficient for this step; only escalate if judgment quality is weak in your reading
 REQUIRED_KEYS = {"claim", "method", "result", "keywords"}
+# Only this many leading characters of a paper reach the model (D1): the report and the UI say so.
+MAX_PAPER_CHARS = 12000
 # Verdict length asked of the judge (F7). Shipped at the validated 150-250: a
 # 60-100 range was tried and changed the judgment on the novel fixture (it said
 # "overlaps significantly"). Change only with a live before/after check.
@@ -64,7 +66,7 @@ No markdown fences, no commentary, no escaped quotes inside string values --
 just the JSON object.
 
 PAPER TEXT:
-{paper_text[:12000]}
+{paper_text[:MAX_PAPER_CHARS]}
 """
     last_error = None
     for attempt in range(3):
@@ -184,6 +186,13 @@ Instructions:
     return _response_text(resp)
 
 
+def numbered_related(related: list) -> list:
+    """Citation numbers (from 1, in list order) shared by the report and the web response.
+    judge_novelty numbers its evidence the same way, so a Verdict's [n] matches both
+    (pinned by test_judge_prompt_numbers_match_numbered_related)."""
+    return [(i + 1, w) for i, w in enumerate(related)]
+
+
 class PipelineState(TypedDict):
     """LangGraph state carried through the pipeline. Orchestration only --
     the three functions above keep their own reasoning, retries, and error
@@ -293,9 +302,13 @@ def run(paper_path: str):
     related = result["related"]
     verdict = result["verdict"]
 
-    related_lines = "\n".join(f"[{i+1}] {w['title']} ({w['year']})" for i, w in enumerate(related))
+    related_lines = "\n".join(f"[{n}] {w['title']} ({w['year']})" for n, w in numbered_related(related))
+    truncation_note = (
+        f"\n> Note: this paper has {len(paper_text)} characters; only the first {MAX_PAPER_CHARS} were assessed.\n"
+        if len(paper_text) > MAX_PAPER_CHARS else ""
+    )
     report = f"""# RVOS POC report -- {os.path.basename(paper_path)}
-
+{truncation_note}
 ## Extracted claim
 {extracted['claim']}
 

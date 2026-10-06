@@ -417,3 +417,65 @@ def test_verdict_length_default_is_the_validated_150_to_250():
 
 def test_default_judge_prompt_still_says_150_to_250_words(monkeypatch):
     assert "- Write 150-250 words of plain prose, not JSON." in _judge_prompt(monkeypatch)
+
+
+# ---------------------------------------------------------------------------
+# shared citation numbering (F15) and truncation limit (D1)
+# ---------------------------------------------------------------------------
+
+_WORKS = [
+    {"title": "A", "year": 2020, "id": "https://openalex.org/W1", "abstract": "has one"},
+    {"title": "B", "year": 2021, "id": "https://openalex.org/W2", "abstract": ""},
+    {"title": "C", "year": 2022, "id": "https://openalex.org/W3", "abstract": "has one"},
+]
+
+
+def test_numbered_related_numbers_from_one_in_list_order():
+    assert [(n, w["title"]) for n, w in rp.numbered_related(_WORKS)] == [(1, "A"), (2, "B"), (3, "C")]
+
+
+def test_judge_prompt_numbers_match_numbered_related(monkeypatch):
+    """The judge skips works without an abstract but must not renumber the rest,
+    or the Verdict's [n] would point at the wrong work in the report and the UI."""
+    seen = {}
+
+    def fake_create(**kwargs):
+        seen.update(kwargs)
+        return _fake_resp("A verdict.")
+
+    monkeypatch.setattr(rp.client.messages, "create", fake_create)
+    rp.judge_novelty({"claim": "c", "method": "m", "result": "r"}, _WORKS)
+    prompt = seen["messages"][0]["content"]
+    for n, w in rp.numbered_related(_WORKS):
+        assert (f"[{n}] {w['title']} (" in prompt) == bool(w["abstract"])
+
+
+def test_max_paper_chars_is_the_limit_the_prompt_uses(monkeypatch):
+    seen = {}
+
+    def fake_create(**kwargs):
+        seen.update(kwargs)
+        return _fake_resp('{"claim":"c","method":"m","result":"r","keywords":["a"]}')
+
+    monkeypatch.setattr(rp.client.messages, "create", fake_create)
+    rp.extract_claim("x" * (rp.MAX_PAPER_CHARS + 50))
+    prompt = seen["messages"][0]["content"]
+    assert "x" * rp.MAX_PAPER_CHARS in prompt and "x" * (rp.MAX_PAPER_CHARS + 1) not in prompt
+
+
+def _run_report(monkeypatch, tmp_path, text):
+    fake = {"extracted": {"claim": "c", "method": "m", "result": "r", "keywords": ["a"]},
+            "related": _WORKS, "verdict": "Overlaps with [1]."}
+    monkeypatch.setattr(rp, "build_graph", lambda: types.SimpleNamespace(invoke=lambda state: fake))
+    paper = tmp_path / "paper.txt"
+    paper.write_text(text, encoding="utf-8")
+    rp.run(str(paper))
+    return (tmp_path / "paper_report.md").read_text(encoding="utf-8")
+
+
+def test_report_notes_truncation_only_for_a_long_paper(monkeypatch, tmp_path):
+    long_report = _run_report(monkeypatch, tmp_path, "word " * rp.MAX_PAPER_CHARS)
+    assert f"only the first {rp.MAX_PAPER_CHARS}" in long_report
+    short_report = _run_report(monkeypatch, tmp_path, "A short paper.")
+    assert "only the first" not in short_report
+    assert "[1] A (2020)" in short_report and "[3] C (2022)" in short_report
