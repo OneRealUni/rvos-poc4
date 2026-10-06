@@ -1,0 +1,81 @@
+# RVOS POC3 -- status and how to run it
+
+Carried over from POC2 (validated, both test directions pass -- see
+CLAUDE.md). This increment adds PDF/DOCX input and CI. The reasoning
+pipeline itself is unchanged.
+
+## What's new in POC3
+- Input formats: .txt (unchanged from POC1/2) plus new support for .pdf and .docx
+- GitHub Actions runs lint + tests on every push (see
+  .github/workflows/tests.yml). The loading tests (test_loading.py) PASS
+  in CI; the four reasoning tests SKIP, since the NDA fixtures and API
+  key aren't there. See CLAUDE.md.
+
+## Setup (about 5 minutes)
+
+```bash
+python -m venv venv
+source venv/bin/activate        # on Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
+```
+
+Open `.env` and paste in your real Anthropic API key.
+
+## Run it
+
+```bash
+python rvos_poc.py "path/to/paper.txt"            # .txt, as before
+python rvos_poc.py "Docs/Test/some_paper.pdf"     # new
+python rvos_poc.py "Docs/Test/some_paper.docx"    # new
+```
+
+The report is written next to the input file as `<name>_report.md`.
+
+Loading is plain text extraction, no cleanup: PDFs give each page's text
+(two-column layouts may interleave), DOCX gives body paragraphs only
+(tables, headers and footers are skipped). Only the first 12,000
+characters reach the model, as before. The run stops with an error
+(exit status 1) for any other file type, and for a file with no
+extractable text -- e.g. a scanned, image-only PDF, since OCR is not
+supported.
+
+## Run the UI
+
+```bash
+uvicorn app:app --host 127.0.0.1 --port 8000
+```
+
+Then open http://127.0.0.1:8000, choose a .pdf, .docx or .txt paper and
+press "Assess novelty". A run takes about a minute. The page shows the
+same Report as the command line (claim, method, stated result, related
+work, verdict), but nothing is saved: the upload goes to a temp file that
+is deleted straight away, and the report is not written anywhere. Related
+works with no abstract are greyed out because the verdict never saw them.
+Uploads over 10 MB are rejected. This is a demo: it has no login and
+should only be bound to localhost.
+
+## Tests
+
+```bash
+ruff check .
+pytest -v
+```
+
+`test_loading.py` and `test_app.py` need no API key or NDA files
+(`test_loading.py` generates tiny PDF/DOCX files on the fly; `test_app.py`
+replaces the pipeline with a fake). `test_rvos_poc.py` calls the live Anthropic
+and OpenAlex APIs and needs two local NDA fixture papers: set their
+paths in `.env` as `RVOS_FIXTURE_OVERLAP` and `RVOS_FIXTURE_NOVEL`
+(defaults `Docs/Test/fixture_overlap.txt` and `fixture_novel.txt`); it skips
+if they or the API key are missing. `Docs/Test/*` is gitignored -- never
+commit NDA papers, and keep their file names out of tracked files: list the
+terms to keep out in `.env` as `RVOS_FORBIDDEN_TERMS` (comma-separated) and
+`test_repo_hygiene.py` checks the tracked files for them (it skips when the
+variable is unset, as in CI).
+
+## Everything else
+
+Setup, known limitations, corrections history, and troubleshooting are
+otherwise unchanged from POC2. Terminology (load vs. extract, paper text,
+verdict) is defined in CONTEXT.md.
