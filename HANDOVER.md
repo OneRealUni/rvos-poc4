@@ -8,10 +8,10 @@ three code-review hand-overs and the OpenAlex incident, is archived in
 
 ## Where things stand
 
-- A **local** git repository in this folder, branch `main`, **not pushed**: no
-  remote is configured and no tag exists yet. The planned tag is
-  `poc4-start-ui-update`; the owner asked for it to be created only after the
-  final checks are confirmed.
+- Published: https://github.com/OneRealUni/rvos-poc4 (public), branch `main`, tag
+  `poc4-start-ui-update` on the final commit of the first push (2026-10-07). GitHub
+  Actions passed on both the branch run and the tag run (67 passed, 5 skipped).
+  Every later commit and push still needs the owner's explicit approval.
 - History: nine commits, see `git log --oneline`: the POC3 baseline with fixture
   names redacted, the new UI, a docs and tracker commit, then one commit per
   increment (Inc 2 to Inc 6). The history was rebuilt twice before any push: once
@@ -39,7 +39,7 @@ three code-review hand-overs and the OpenAlex incident, is archived in
 | `Docs/handoffs/` | **Local only (gitignored, never pushed).** Dated snapshots written by the `/handoff` command at the end of a session: a work log, not the current state. Add a new dated file after each session |
 | `pytest_output.txt` | Offline test evidence at a stamped commit |
 
-## Before the first push (checklist; nothing has been pushed)
+## Before the first push (checklist; completed 2026-10-07)
 
 1. Done: all increments committed and approved.
 2. Decided by the owner (2026-10-07): no LICENSE (all rights reserved by default);
@@ -50,11 +50,12 @@ three code-review hand-overs and the OpenAlex incident, is archived in
    simulation (copy tracked + untracked-not-ignored files to a temp folder with no
    `.env`; expect 67 passed, 5 skipped), and a scan of every commit's contents and
    messages for the forbidden terms, local path fragments and the real key values.
-4. Create the tag `poc4-start-ui-update` last, on the final commit, only when the
-   owner says so (a tag set before a history rewrite would point at a dead commit).
-5. Only on the owner's explicit "push": push, then verify the GitHub Actions run
-   (expect 67 passed, 5 skipped). GitHub commands need approval; pushing workflow
-   files needs the `workflow` scope on the `gh` token.
+4. Done: the tag `poc4-start-ui-update` was created last, on the final commit (a
+   tag set before a history rewrite would point at a dead commit).
+5. Done: pushed on the owner's explicit word, CI verified (67 passed, 5 skipped),
+   and the public files re-checked on GitHub (no `.env`, fixtures or handoff
+   snapshots, no session links, no forbidden terms). For later pushes the `gh`
+   token already has the `workflow` scope; GitHub commands still need approval.
 
 ## What POC4 changed, by increment
 

@@ -25,7 +25,7 @@
 | 3 | F7 verdict length + F6 temperature (closed: not implementable) + flaky-test study | `rvos_poc.py`, `test_pipeline_offline.py`, maybe `test_rvos_poc.py` | DONE (committed; owner approved) |
 | 4 | Truncation note (D1 UI and report part) + F15 shared numbering helper | `app.py`, `rvos_poc.py`, `index.html`, tests | DONE (committed; owner approved) |
 | 5 | F12 mocked test + D2 retrieval-relevance investigation | tests, investigation note | F12 and D2 DONE (committed; owner approved) |
-| 6 | Wrap-up: regenerate `pytest_output.txt`, close the register, rewrite HANDOVER + handoff files, `.gitattributes` | docs | DONE (committed; owner approved). Tag `poc4-start-ui-update` and push NOT done: wait for the owner's word. |
+| 6 | Wrap-up: regenerate `pytest_output.txt`, close the register, rewrite HANDOVER + handoff files, `.gitattributes` | docs | DONE (committed; owner approved). Tagged `poc4-start-ui-update` and pushed on 2026-10-07 (public repo `OneRealUni/rvos-poc4`, CI green: 67 passed, 5 skipped). |
 
 ## Issues
 

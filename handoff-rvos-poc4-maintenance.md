@@ -22,9 +22,9 @@ maintenance** (no task chosen yet; ask the user). For the planned larger work se
 - The owner reviews and confirms after every increment.
 
 ## Where things stand
-- Local repository, branch `main`, not pushed, no remote, no tag yet (planned tag:
-  `poc4-start-ui-update`, to be created only on the owner's word). Check
-  `git log --oneline` and plain `git status`.
+- Published at https://github.com/OneRealUni/rvos-poc4 (public), tag
+  `poc4-start-ui-update` on the first-push commit. Check `git log --oneline` and plain
+  `git status`; every later commit and push needs the owner's explicit approval.
 - Offline suite: 67 passed, 1 skipped; CI should show 67 passed, 5 skipped.
 - Issues are tracked in `Docs/review/POC4_backlog.md`; update it at the end of every
   increment.
