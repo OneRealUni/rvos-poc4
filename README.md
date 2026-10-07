@@ -105,7 +105,7 @@ tracked files for them (it skips when the variable is unset, as in CI).
 
 Terminology (load vs. extract, paper text, verdict) is defined in
 CONTEXT.md. The history of POC3, including three code-review hand-overs and
-the OpenAlex incident, is in HANDOVER.md. The findings register and fix plan
+the OpenAlex incident, is in Docs/review/POC3_handover.md; the POC4 handover is HANDOVER.md. The findings register and fix plan
 (`Docs/review/`) list what is fixed and what is still open, for
 example verdict length (F7), temperature (F6) and the 12,000-character
 truncation (D1).

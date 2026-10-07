@@ -102,3 +102,7 @@ Core file = touches `rvos_poc.py` or `test_rvos_poc.py`. Those are changed last,
 
 - **Batch A (no core files):** F1, F8, F9, F10, F11 (new test file), F2 web fix, F14 check.
 - **Batch B (core files, last):** F3, F4, F5, F6, F7, F2 CLI fix, and optionally F12.
+
+## POC4 status of the items that were open at the end of POC3 (2026-10-07)
+
+Tracked in `POC4_backlog.md`. F6: CLOSED, not implementable (the API rejects `temperature` for `claude-sonnet-5`). F7: the display now clamps a long Verdict; a 60-100 word judge prompt changed the judgment and is deferred (P4-17). F12: CLOSED, tested offline and checked once live. F14: checked in a browser against a stub; a live run with an abstract-less work could not be forced. F15: CLOSED (`numbered_related()`). D1: the truncation is now disclosed in the report and the UI; RAG remains open (P4-18). D2: investigated, no code change (P4-11); the extracted keywords matter more than the query shape. W5 (PyAlex) is now an owner priority (P4-19).

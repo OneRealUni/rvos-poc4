@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - patches/ is gitignored: local patch files are scratch copies of changes already applied. There is no "commit review-evidence patches" routine in this repo -- CI now provides that evidence.
 
 ## Git and test hygiene
-Standing rules from the owner (see handoff-rvos-poc3-post-review.md).
+Standing rules from the owner (see handoff-rvos-poc4-maintenance.md).
 - Explain the exact git commands first, then wait for explicit approval
   before every commit and every push. Don't infer permission from adjacent
   context.
@@ -33,18 +33,21 @@ Standing rules from the owner (see handoff-rvos-poc3-post-review.md).
   (`RVOS_FORBIDDEN_TERMS`) live only in the gitignored `.env`;
   `test_repo_hygiene.py` checks tracked files for them (it skips in CI, where
   `.env` is absent).
+- Do not add a `Claude-Session:` trailer to commit messages (public repo); the
+  `Co-Authored-By:` line is fine. Never commit `Docs/handoffs/` (local only, gitignored).
 - Never print a secret. The OpenAlex key is sent as a header, not a URL
   parameter, so a failing request can't put it in a traceback.
 
 ## Current state
 POC4 is POC3 plus a new UI. POC3 (the reasoning pipeline, PDF/DOCX/TXT
 loading, CI, the demo web UI, and three code-review hand-overs) is the
-baseline commit `ca3424f`: rvos-poc3 `main` at `d51193d` (tag `poc3-complete`)
+baseline (the first commit): rvos-poc3 `main` at `d51193d` (tag `poc3-complete`)
 with the NDA fixture names redacted (`test_rvos_poc.py` reads its fixture paths
 from `.env`; new `test_repo_hygiene.py`). POC4 changes `static/index.html`,
 plus one test in `test_app.py`. Open issues are tracked in
 Docs/review/POC4_backlog.md. See also README.md, CONTEXT.md, HANDOVER.md
-(POC3 history), and Docs/review/ (findings register and fix plan).
+(POC4 handover; the POC3 history is Docs/review/POC3_handover.md), the two
+handoff-rvos-poc4-*.md files, and Docs/review/ (findings register and fix plan).
 
 ## Completed increments
 - POC1/POC2: the two-agent reasoning pipeline, orchestrated with

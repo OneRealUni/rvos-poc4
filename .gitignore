@@ -96,3 +96,6 @@ Docs/Test/*
 # Local patch files (e.g. patches/*.patch): scratch copies of changes
 # already applied, not part of the public repo.
 patches/
+
+# Local session snapshots from the /handoff command (kept on the owner's machine only)
+Docs/handoffs/

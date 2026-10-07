@@ -1,28 +1,83 @@
-# Generated at commit 6271232 (code as of that commit; predates test_app.py,
-# so 15 tests, not the 25 that exist now). Regenerate before trusting this
-# as current state -- see Docs/review/POC3_fix_plan.md, Patch 9.
+# Generated at the Inc 5 commit (working tree at that commit), 2026-10-07.
+# Offline test files only: test_loading.py, test_app.py, test_pipeline_offline.py,
+# test_repo_hygiene.py, run with RVOS_FORBIDDEN_TERMS unset, as CI runs them. The four
+# live tests in test_rvos_poc.py are NOT included: they spend API credit. Run them
+# deliberately with `pytest -v test_rvos_poc.py`. Local paths are replaced by <repo>.
 
 ============================= test session starts =============================
 platform win32 -- Python 3.11.14, pytest-9.1.1, pluggy-1.6.0 -- <repo>\venv\Scripts\python.exe
 cachedir: .pytest_cache
 rootdir: <repo>
-plugins: anyio-4.15.1, langsmith-0.14.0
-collecting ... collected 15 items
+plugins: anyio-4.15.1, langsmith-0.14.4
+collecting ... collected 68 items
 
-test_loading.py::test_loads_docx PASSED                                  [  6%]
-test_loading.py::test_loads_pdf_across_pages PASSED                      [ 13%]
-test_loading.py::test_loads_txt_utf8 PASSED                              [ 20%]
-test_loading.py::test_loads_txt_cp1252_fallback PASSED                   [ 26%]
-test_loading.py::test_extension_match_is_case_insensitive PASSED         [ 33%]
-test_loading.py::test_unsupported_extension_raises_naming_supported_formats[paper.rtf] PASSED [ 40%]
-test_loading.py::test_unsupported_extension_raises_naming_supported_formats[paper.md] PASSED [ 46%]
-test_loading.py::test_unsupported_extension_raises_naming_supported_formats[paper] PASSED [ 53%]
-test_loading.py::test_blank_pdf_raises_no_extractable_text PASSED        [ 60%]
-test_loading.py::test_whitespace_only_docx_raises_no_extractable_text PASSED [ 66%]
-test_loading.py::test_cli_reports_loading_error_without_traceback PASSED [ 73%]
-test_rvos_poc.py::test_overlap_fixture_flags_overlap_not_novel PASSED             [ 80%]
-test_rvos_poc.py::test_novel_fixture_does_not_flag_direct_overlap PASSED         [ 86%]
-test_rvos_poc.py::test_overlap_claims_cite_a_numbered_source PASSED      [ 93%]
-test_rvos_poc.py::test_report_citation_numbers_match_related_work_list PASSED [100%]
+test_loading.py::test_loads_docx PASSED                                  [  1%]
+test_loading.py::test_loads_pdf_across_pages PASSED                      [  2%]
+test_loading.py::test_loads_txt_utf8 PASSED                              [  4%]
+test_loading.py::test_loads_txt_cp1252_fallback PASSED                   [  5%]
+test_loading.py::test_extension_match_is_case_insensitive PASSED         [  7%]
+test_loading.py::test_unsupported_extension_raises_naming_supported_formats[paper.rtf] PASSED [  8%]
+test_loading.py::test_unsupported_extension_raises_naming_supported_formats[paper.md] PASSED [ 10%]
+test_loading.py::test_unsupported_extension_raises_naming_supported_formats[paper] PASSED [ 11%]
+test_loading.py::test_blank_pdf_raises_no_extractable_text PASSED        [ 13%]
+test_loading.py::test_whitespace_only_docx_raises_no_extractable_text PASSED [ 14%]
+test_loading.py::test_cli_reports_loading_error_without_traceback PASSED [ 16%]
+test_app.py::test_txt_upload_returns_report PASSED                       [ 17%]
+test_app.py::test_related_work_is_numbered_and_flags_missing_abstracts PASSED [ 19%]
+test_app.py::test_response_flags_a_paper_longer_than_the_assessed_limit PASSED [ 20%]
+test_app.py::test_insufficient_evidence_with_no_related_work_is_a_normal_report PASSED [ 22%]
+test_app.py::test_related_work_without_any_abstract_is_flagged_not_dropped PASSED [ 23%]
+test_app.py::test_docx_upload_is_loaded_and_fed_to_the_pipeline PASSED   [ 25%]
+test_app.py::test_unsupported_type_is_400_with_user_readable_message PASSED [ 26%]
+test_app.py::test_empty_file_is_400_no_extractable_text PASSED           [ 27%]
+test_app.py::test_loader_crash_is_400_not_500 PASSED                     [ 29%]
+test_app.py::test_oversized_upload_is_413 PASSED                         [ 30%]
+test_app.py::test_upstream_failure_is_502_with_generic_message PASSED    [ 32%]
+test_app.py::test_unexpected_failure_is_500_with_generic_message PASSED  [ 33%]
+test_app.py::test_temp_file_is_deleted_after_success_and_after_failure PASSED [ 35%]
+test_app.py::test_index_page_is_served PASSED                            [ 36%]
+test_app.py::test_index_page_has_details_toggle_and_container PASSED     [ 38%]
+test_app.py::test_index_page_shows_cited_works_under_the_verdict PASSED  [ 39%]
+test_app.py::test_index_page_has_a_truncation_note PASSED                [ 41%]
+test_app.py::test_index_page_clamps_a_long_verdict_with_a_read_more_toggle PASSED [ 42%]
+test_app.py::test_index_page_has_inline_favicon_and_accurate_wait_text PASSED [ 44%]
+test_pipeline_offline.py::test_response_text_skips_a_leading_thinking_block PASSED [ 45%]
+test_pipeline_offline.py::test_response_text_raises_if_no_text_block_is_present PASSED [ 47%]
+test_pipeline_offline.py::test_reconstruct_abstract_handles_empty_or_missing_index PASSED [ 48%]
+test_pipeline_offline.py::test_reconstruct_abstract_rebuilds_word_order_from_positions PASSED [ 50%]
+test_pipeline_offline.py::test_extract_claim_retries_on_malformed_json_then_succeeds PASSED [ 51%]
+test_pipeline_offline.py::test_extract_claim_retries_when_a_required_key_is_missing PASSED [ 52%]
+test_pipeline_offline.py::test_extract_claim_gives_up_after_three_bad_samples PASSED [ 54%]
+test_pipeline_offline.py::test_extract_claim_retries_when_response_is_not_a_json_object PASSED [ 55%]
+test_pipeline_offline.py::test_extract_claim_rejects_keywords_that_are_not_a_list PASSED [ 57%]
+test_pipeline_offline.py::test_extract_claim_rejects_an_empty_keywords_list PASSED [ 58%]
+test_pipeline_offline.py::test_search_openalex_retries_on_429_then_succeeds PASSED [ 60%]
+test_pipeline_offline.py::test_search_openalex_raises_after_persistent_429 PASSED [ 61%]
+test_pipeline_offline.py::test_search_openalex_sends_api_key_as_authorization_header_when_set PASSED [ 63%]
+test_pipeline_offline.py::test_search_openalex_omits_authorization_header_when_no_key PASSED [ 64%]
+test_pipeline_offline.py::test_search_openalex_does_not_retry_a_genuinely_unretryable_error PASSED [ 66%]
+test_pipeline_offline.py::test_search_openalex_retries_on_503_then_succeeds PASSED [ 67%]
+test_pipeline_offline.py::test_search_openalex_retries_on_504_then_succeeds PASSED [ 69%]
+test_pipeline_offline.py::test_search_openalex_retries_on_500_then_succeeds PASSED [ 70%]
+test_pipeline_offline.py::test_search_openalex_honors_retry_after_header_when_present PASSED [ 72%]
+test_pipeline_offline.py::test_search_openalex_falls_back_to_backoff_without_retry_after PASSED [ 73%]
+test_pipeline_offline.py::test_search_openalex_caps_retry_after_at_30_seconds PASSED [ 75%]
+test_pipeline_offline.py::test_search_openalex_ignores_unparseable_retry_after PASSED [ 76%]
+test_pipeline_offline.py::test_load_paper_text_wraps_a_corrupt_pdf_as_paper_load_error PASSED [ 77%]
+test_pipeline_offline.py::test_load_paper_text_reads_docx_table_cells PASSED [ 79%]
+test_pipeline_offline.py::test_judge_novelty_prompt_uses_the_configured_verdict_length PASSED [ 80%]
+test_pipeline_offline.py::test_verdict_length_default_is_the_validated_150_to_250 PASSED [ 82%]
+test_pipeline_offline.py::test_default_judge_prompt_still_says_150_to_250_words PASSED [ 83%]
+test_pipeline_offline.py::test_numbered_related_numbers_from_one_in_list_order PASSED [ 85%]
+test_pipeline_offline.py::test_judge_prompt_numbers_match_numbered_related PASSED [ 86%]
+test_pipeline_offline.py::test_max_paper_chars_is_the_limit_the_prompt_uses PASSED [ 88%]
+test_pipeline_offline.py::test_report_notes_truncation_only_for_a_long_paper PASSED [ 89%]
+test_pipeline_offline.py::test_judge_prompt_falls_back_when_every_abstract_is_empty PASSED [ 91%]
+test_pipeline_offline.py::test_judge_prompt_falls_back_when_there_are_no_related_works_at_all PASSED [ 92%]
+test_pipeline_offline.py::test_judge_prompt_always_carries_the_insufficient_evidence_instruction PASSED [ 94%]
+test_pipeline_offline.py::test_judge_passes_an_insufficient_evidence_verdict_through_unchanged PASSED [ 95%]
+test_pipeline_offline.py::test_report_with_no_related_work_is_written_without_error PASSED [ 97%]
+test_repo_hygiene.py::test_fixture_paths_come_from_the_environment PASSED [ 98%]
+test_repo_hygiene.py::test_no_forbidden_terms_in_tracked_files SKIPPED   [100%]
 
-======================== 15 passed in 64.92s (0:01:04) ========================
+======================= 67 passed, 1 skipped in 10.32s ========================
