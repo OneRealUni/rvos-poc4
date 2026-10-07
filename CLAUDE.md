@@ -110,7 +110,7 @@ test_rvos_poc.py already skips cleanly (not crashes) when they're missing
 SKIPPED, not PASSED — that's expected, not a bug. test_loading.py uses
 synthetic files generated in tmp_path, test_pipeline_offline.py mocks the
 model and OpenAlex, and test_app.py fakes the graph, so all three PASS in CI.
-At POC4 CI should show 60 passed, 5 skipped (the fifth skip is the
+At POC4 CI should show 67 passed, 5 skipped (the fifth skip is the
 test_repo_hygiene.py scan, which needs `.env`). CI verifies the code
 imports, lints cleanly, loads PDF/DOCX/txt correctly, and that the web
 routes behave; it does not verify reasoning correctness. No

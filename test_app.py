@@ -73,6 +73,25 @@ def test_response_flags_a_paper_longer_than_the_assessed_limit(client, monkeypat
     assert _upload(client, "paper.txt", b"Some paper text.").json()["truncated"] is True
 
 
+def test_insufficient_evidence_with_no_related_work_is_a_normal_report(client, monkeypatch):
+    empty = {**FAKE_STATE, "related": [], "verdict": "Insufficient evidence to judge."}
+    monkeypatch.setattr(app_module, "build_graph", lambda: type("G", (), {"invoke": lambda self, s: empty})())
+    r = _upload(client, "paper.txt", b"Some paper text.")
+    assert r.status_code == 200
+    assert r.json()["related"] == []
+    assert r.json()["verdict"] == "Insufficient evidence to judge."
+
+
+def test_related_work_without_any_abstract_is_flagged_not_dropped(client, monkeypatch):
+    bare = {**FAKE_STATE, "related": [
+        {"title": "A", "year": 2020, "id": "https://openalex.org/W1", "abstract": ""},
+        {"title": "B", "year": 2021, "id": "https://openalex.org/W2", "abstract": ""},
+    ]}
+    monkeypatch.setattr(app_module, "build_graph", lambda: type("G", (), {"invoke": lambda self, s: bare})())
+    related = _upload(client, "paper.txt", b"Some paper text.").json()["related"]
+    assert [(w["n"], w["has_abstract"]) for w in related] == [(1, False), (2, False)]
+
+
 def test_docx_upload_is_loaded_and_fed_to_the_pipeline(client, tmp_path, monkeypatch):
     seen = {}
 

@@ -390,7 +390,7 @@ def test_load_paper_text_reads_docx_table_cells():
 # ---------------------------------------------------------------------------
 
 
-def _judge_prompt(monkeypatch):
+def _judge_prompt(monkeypatch, related=None):
     seen = {}
 
     def fake_create(**kwargs):
@@ -398,7 +398,7 @@ def _judge_prompt(monkeypatch):
         return _fake_resp("A verdict.")
 
     monkeypatch.setattr(rp.client.messages, "create", fake_create)
-    rp.judge_novelty({"claim": "c", "method": "m", "result": "r"}, [])
+    rp.judge_novelty({"claim": "c", "method": "m", "result": "r"}, related or [])
     return seen["messages"][0]["content"]
 
 
@@ -463,9 +463,9 @@ def test_max_paper_chars_is_the_limit_the_prompt_uses(monkeypatch):
     assert "x" * rp.MAX_PAPER_CHARS in prompt and "x" * (rp.MAX_PAPER_CHARS + 1) not in prompt
 
 
-def _run_report(monkeypatch, tmp_path, text):
+def _run_report(monkeypatch, tmp_path, text, related=None):
     fake = {"extracted": {"claim": "c", "method": "m", "result": "r", "keywords": ["a"]},
-            "related": _WORKS, "verdict": "Overlaps with [1]."}
+            "related": _WORKS if related is None else related, "verdict": "Overlaps with [1]."}
     monkeypatch.setattr(rp, "build_graph", lambda: types.SimpleNamespace(invoke=lambda state: fake))
     paper = tmp_path / "paper.txt"
     paper.write_text(text, encoding="utf-8")
@@ -479,3 +479,37 @@ def test_report_notes_truncation_only_for_a_long_paper(monkeypatch, tmp_path):
     short_report = _run_report(monkeypatch, tmp_path, "A short paper.")
     assert "only the first" not in short_report
     assert "[1] A (2020)" in short_report and "[3] C (2022)" in short_report
+
+
+# ---------------------------------------------------------------------------
+# the "insufficient evidence" path (F12): no or empty evidence reaches the judge
+# ---------------------------------------------------------------------------
+
+_NO_ABSTRACTS = [{"title": "A", "year": 2020, "id": "https://openalex.org/W1", "abstract": ""}]
+_FALLBACK_LINE = "(No abstracts were retrievable for the top matches.)"
+
+
+def test_judge_prompt_falls_back_when_every_abstract_is_empty(monkeypatch):
+    prompt = _judge_prompt(monkeypatch, _NO_ABSTRACTS)
+    assert _FALLBACK_LINE in prompt
+    assert "[1] A (" not in prompt
+
+
+def test_judge_prompt_falls_back_when_there_are_no_related_works_at_all(monkeypatch):
+    assert _FALLBACK_LINE in _judge_prompt(monkeypatch, [])
+
+
+def test_judge_prompt_always_carries_the_insufficient_evidence_instruction(monkeypatch):
+    for related in ([], _NO_ABSTRACTS, _WORKS):
+        assert 'say "insufficient evidence" explicitly' in _judge_prompt(monkeypatch, related)
+
+
+def test_judge_passes_an_insufficient_evidence_verdict_through_unchanged(monkeypatch):
+    monkeypatch.setattr(rp.client.messages, "create", lambda **k: _fake_resp("Insufficient evidence to judge."))
+    assert rp.judge_novelty({"claim": "c", "method": "m", "result": "r"}, _NO_ABSTRACTS) == "Insufficient evidence to judge."
+
+
+def test_report_with_no_related_work_is_written_without_error(monkeypatch, tmp_path):
+    report = _run_report(monkeypatch, tmp_path, "A short paper.", related=[])
+    assert "## Related work retrieved (0 results)" in report
+    assert "## Novelty verdict" in report

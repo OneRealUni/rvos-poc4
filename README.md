@@ -89,7 +89,7 @@ Anthropic credit and OpenAlex quota. CI has neither, so there they skip.
 `test_repo_hygiene.py` need no API key or NDA files (`test_loading.py`
 generates tiny PDF/DOCX files on the fly; `test_app.py` replaces the
 pipeline with a fake; `test_pipeline_offline.py` mocks the model and
-OpenAlex). CI shows 60 passed and 5 skipped. `test_rvos_poc.py` calls the
+OpenAlex). CI shows 67 passed and 5 skipped. `test_rvos_poc.py` calls the
 live Anthropic and OpenAlex APIs and needs two local NDA fixture papers: set
 their paths in `.env` as `RVOS_FIXTURE_OVERLAP` (a near-duplicate of a
 published paper) and `RVOS_FIXTURE_NOVEL` (unpublished work), relative to
