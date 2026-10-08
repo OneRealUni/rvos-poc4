@@ -14,7 +14,7 @@ the three code-review hand-overs and the OpenAlex incident, is archived in
 | Current state, rules, gotchas, how to run | this file (`HANDOVER.md`) |
 | **All open and closed work, status, acceptance criteria** | **Jira project `RT`** (Scrum board). The only tracker: do not copy item lists into repo docs |
 | Definition of Done | Confluence page "RT Definition of Done (standard)" in the Agile directory of the RTVOS space |
-| Agent handoff | ONE file for agents, written at the end of every session by the handoff skill, local only (`Docs/handoffs/`, gitignored) |
+| Agent handoff | ONE file for agents, written at the end of every session by the handoff skill, local only (`Docs/handoff/`, gitignored) |
 | POC3 audit trail (frozen) | `Docs/review/POC3_findings_register.md`, `POC3_fix_plan.md`, `POC3_handover.md` |
 | Offline test evidence | `pytest_output.txt` (stamped with a commit) |
 
@@ -42,7 +42,7 @@ Handoff is only for agents. There is nothing else.
 - Explain the exact git commands first, then wait for explicit approval before every
   commit and every push. Stage files by name, never `git add .`. No `Claude-Session:`
   trailer (`Co-Authored-By:` is fine).
-- Never commit anything under `Docs/Test/` or `Docs/handoffs/`. Keep fixture names,
+- Never commit anything under `Docs/Test/` or `Docs/handoff/`. Keep fixture names,
   paper titles, author names, local paths and keys out of tracked files, commit
   messages, Jira and Confluence. `test_repo_hygiene.py` checks tracked files when
   `RVOS_FORBIDDEN_TERMS` is set in `.env`.
@@ -68,6 +68,8 @@ Handoff is only for agents. There is nothing else.
   a new workstream starts.
 - Write a handover and handoff when a thread nears about 140k tokens; update Jira
   fully first. Keep both local.
+- For POC3 files, use the owner's local `..\POC3` repo. Any GitHub command (push,
+  `gh`) needs the owner's approval first.
 
 ## What POC4 changed
 
@@ -124,10 +126,23 @@ Handoff is only for agents. There is nothing else.
 - Jira/Confluence: write access beyond create, edit and link was not tested; no
   delete operation was found, so a wrong create is removed by the owner in the UI.
 
+## Suggested skills
+
+- `mattpocock-skills:grilling` to scope work with the owner (for example RAG).
+- `mattpocock-skills:tdd` for every code change (test first, one increment per commit).
+- `mattpocock-skills:code-review` before handing a diff to the owner.
+- `mattpocock-skills:diagnosing-bugs` if a test or the pipeline misbehaves (rerun once
+  first: live tests vary).
+- `mattpocock-skills:domain-modeling` only if `CONTEXT.md` needs new terms (for example
+  "chunk" once RAG is designed).
+- `claude-api` before touching any Anthropic call (model constraints).
+- The owner types `/handoff` (and any grilling-with-docs skill) themselves; the agent
+  cannot invoke them. Do not run `init`: it would rewrite `CLAUDE.md`.
+
 ## Session start checklist
 
 1. `git status` (plain), `git log --oneline -10`.
-2. Read `CLAUDE.md`, `CONTEXT.md`, this file, then the agent handoff in `Docs/handoffs/`.
+2. Read `CLAUDE.md`, `CONTEXT.md`, this file, then the agent handoff in `Docs/handoff/`.
 3. Open the Jira board (project `RT`); ask the owner which story to work on. Do not
    assume one.
 

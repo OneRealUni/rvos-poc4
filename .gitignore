@@ -97,5 +97,5 @@ Docs/Test/*
 # already applied, not part of the public repo.
 patches/
 
-# Local session snapshots from the /handoff command (kept on the owner's machine only)
-Docs/handoffs/
+# The single agent handoff file from the /handoff command (kept on the owner's machine only)
+Docs/handoff/

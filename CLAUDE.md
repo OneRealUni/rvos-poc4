@@ -34,7 +34,7 @@ Standing rules from the owner (see HANDOVER.md).
   `test_repo_hygiene.py` checks tracked files for them (it skips in CI, where
   `.env` is absent).
 - Do not add a `Claude-Session:` trailer to commit messages (public repo); the
-  `Co-Authored-By:` line is fine. Never commit `Docs/handoffs/` (local only, gitignored).
+  `Co-Authored-By:` line is fine. Never commit `Docs/handoff/` (local only, gitignored).
 - Never print a secret. The OpenAlex key is sent as a header, not a URL
   parameter, so a failing request can't put it in a traceback.
 
