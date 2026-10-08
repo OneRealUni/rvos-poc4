@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - patches/ is gitignored: local patch files are scratch copies of changes already applied. There is no "commit review-evidence patches" routine in this repo -- CI now provides that evidence.
 
 ## Git and test hygiene
-Standing rules from the owner (see handoff-rvos-poc4-maintenance.md).
+Standing rules from the owner (see HANDOVER.md).
 - Explain the exact git commands first, then wait for explicit approval
   before every commit and every push. Don't infer permission from adjacent
   context.
@@ -46,8 +46,8 @@ with the NDA fixture names redacted (`test_rvos_poc.py` reads its fixture paths
 from `.env`; new `test_repo_hygiene.py`). POC4 changes `static/index.html`,
 plus one test in `test_app.py`. Open issues are tracked in
 Docs/review/POC4_backlog.md. See also README.md, CONTEXT.md, HANDOVER.md
-(POC4 handover; the POC3 history is Docs/review/POC3_handover.md), the two
-handoff-rvos-poc4-*.md files, and Docs/review/ (findings register and fix plan).
+(POC4 handover; the POC3 history is Docs/review/POC3_handover.md), and
+Docs/review/ (findings register and fix plan).
 
 ## Completed increments
 - POC1/POC2: the two-agent reasoning pipeline, orchestrated with

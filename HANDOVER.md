@@ -1,142 +1,135 @@
 # POC4 handover
 
-Written 2026-10-07. POC4 is POC3 plus a new UI and a set of tracked fixes. Read
-`CLAUDE.md` (rules), `CONTEXT.md` (glossary) and `Docs/review/POC4_backlog.md`
-(the issue tracker) before touching anything. The POC3 history, including the
-three code-review hand-overs and the OpenAlex incident, is archived in
+The one document the owner and Claude both read and improve. Updated 2026-10-08.
+POC4 is POC3 plus a new UI and a set of tracked fixes. The POC3 history, including
+the three code-review hand-overs and the OpenAlex incident, is archived in
 `Docs/review/POC3_handover.md`.
+
+## Where things live
+
+| What | Where |
+|---|---|
+| Rules for working in this repo | `CLAUDE.md` |
+| Glossary (paper, claim, verdict, load vs extract) | `CONTEXT.md` |
+| Current state, rules, gotchas, how to run | this file (`HANDOVER.md`) |
+| **All open and closed work, status, acceptance criteria** | **Jira project `RT`** (Scrum board). The only tracker: do not copy item lists into repo docs |
+| Definition of Done | Confluence page "RT Definition of Done (standard)" in the Agile directory of the RTVOS space |
+| Agent handoff | ONE file for agents, written at the end of every session by the handoff skill, local only (`Docs/handoffs/`, gitignored) |
+| POC3 audit trail (frozen) | `Docs/review/POC3_findings_register.md`, `POC3_fix_plan.md`, `POC3_handover.md` |
+| Offline test evidence | `pytest_output.txt` (stamped with a commit) |
+
+Handover (this file) is for the owner and Claude, across sessions and compacts.
+Handoff is only for agents. There is nothing else.
 
 ## Where things stand
 
-- Published: https://github.com/OneRealUni/rvos-poc4 (public), branch `main`, tag
-  `poc4-start-ui-update` on the final commit of the first push (2026-10-07). GitHub
-  Actions passed on both the branch run and the tag run (67 passed, 5 skipped).
-  Every later commit and push still needs the owner's explicit approval.
-- History: nine commits, see `git log --oneline`: the POC3 baseline with fixture
-  names redacted, the new UI, a docs and tracker commit, then one commit per
-  increment (Inc 2 to Inc 6). The history was rebuilt twice before any push: once
-  so NDA fixture names never appear in it, once to strip the `Claude-Session:` line
-  from every commit message. Commit hashes are deliberately not quoted in the docs
-  because a rewrite changes them.
-- Tests: offline suite 67 passed + 1 skipped (CI shows 67 passed, 5 skipped,
-  the five being the four live tests and the `.env`-dependent hygiene scan).
-  The four live tests (`test_rvos_poc.py`) passed 4 of 4 after the fixture
-  rename (2026-10-06) and are run only deliberately.
-- The working tree is clean once the final commit is made; check `git status`.
-
-## Which document is for what
-
-| Document | Purpose |
-|---|---|
-| `CLAUDE.md` | Rules for working in this repo (read first) |
-| `CONTEXT.md` | Glossary: paper, claim, verdict, load vs extract |
-| `HANDOVER.md` (this file) | Current state, decisions, findings, gotchas, checklist |
-| `Docs/review/POC4_backlog.md` | The **live** POC4 tracker: increments, decisions, issues P4-01..P4-19, owner priorities |
-| `Docs/review/POC3_findings_register.md`, `POC3_fix_plan.md` | The **frozen** POC3 audit trail from the external code review (F1-F17, D1/D2, W1-W5). Do not add new issues here; the register only has a short POC4 status section at its end |
-| `Docs/review/POC3_handover.md` | Archived POC3 handover (history only) |
-| `handoff-rvos-poc4-maintenance.md` | Entry point for a fresh agent doing ordinary maintenance |
-| `handoff-rvos-poc4-next-increments.md` | Entry point for the planned RAG / PyAlex work |
-| `Docs/handoffs/` | **Local only (gitignored, never pushed).** Dated snapshots written by the `/handoff` command at the end of a session: a work log, not the current state. Add a new dated file after each session |
-| `pytest_output.txt` | Offline test evidence at a stamped commit |
-
-## Before the first push (checklist; completed 2026-10-07)
-
-1. Done: all increments committed and approved.
-2. Decided by the owner (2026-10-07): no LICENSE (all rights reserved by default);
-   the repository is public and named `rvos-poc4`; the `Claude-Session:` line was
-   stripped from every commit message; `Docs/handoffs/` stays local; the old-history
-   backup bundle was deleted.
-3. Re-run: `ruff check .`, the four offline test files, a clean-checkout CI
-   simulation (copy tracked + untracked-not-ignored files to a temp folder with no
-   `.env`; expect 67 passed, 5 skipped), and a scan of every commit's contents and
-   messages for the forbidden terms, local path fragments and the real key values.
-4. Done: the tag `poc4-start-ui-update` was created last, on the final commit (a
-   tag set before a history rewrite would point at a dead commit).
-5. Done: pushed on the owner's explicit word, CI verified (67 passed, 5 skipped),
-   and the public files re-checked on GitHub (no `.env`, fixtures or handoff
-   snapshots, no session links, no forbidden terms). For later pushes the `gh`
-   token already has the `workflow` scope; GitHub commands still need approval.
-
-## What POC4 changed, by increment
-
-- **UI:** dark-first page with a light variant, Verdict card
-  first, a "Show details" button for Claim, Method, Stated result and Related
-  work. Plain HTML/CSS/JS, `textContent` only, `https://` links only.
-- **Inc 1, fixture names:** `test_rvos_poc.py` reads the NDA fixture paths from
-  `RVOS_FIXTURE_OVERLAP` / `RVOS_FIXTURE_NOVEL` in the gitignored `.env`;
-  `test_repo_hygiene.py` scans tracked files for the terms in
-  `RVOS_FORBIDDEN_TERMS` (also in `.env`; it skips in CI).
-- **Inc 2:** a "Cited in the verdict" list built from the `[n]` numbers in the
-  Verdict text, honest wait text, an inline favicon.
-- **Inc 3:** verdict length constants kept at the validated 150-250; a long
-  Verdict is clamped to six lines with "Read more" / "Show less".
-- **Inc 4:** `MAX_PAPER_CHARS`, a `truncated` flag in `/analyse` with a note on
-  the page and in the report, and a shared `numbered_related()` helper.
-- **Inc 5:** seven tests for the "insufficient evidence" path; retrieval
-  relevance investigated.
-- **Inc 6:** this handover, the two handoff files, a regenerated
-  `pytest_output.txt`, and `.gitattributes`.
-
-## Findings worth remembering
-
-- **F6 (temperature) is not possible** on `claude-sonnet-5`: the API returns
-  400 "`temperature` is deprecated for this model" and SDK 1.11 has no such
-  parameter. Variance is measured, not controlled.
-- **A 60-100 word judge verdict changes the judgment.** On the novel fixture
-  the short verdicts said "The claim overlaps significantly with existing
-  work" (9 of 9 shorter verdicts failed the live "novel" check; the old prompt
-  also failed 1 of 3, unexplained). It is deferred as P4-17. The core live test
-  was deliberately left unchanged.
-- **Retrieval (D2):** no query shape wins consistently; the keywords chosen by
-  `extract_claim` matter more. A low related share on a novel paper is
-  expected.
-- Insufficient evidence: the model does say so on empty evidence (one live call).
+- Published: `OneRealUni/rvos-poc4` (public), branch `main`, tag
+  `poc4-start-ui-update` (2026-10-07). GitHub Actions passed: 67 passed, 5 skipped.
+  Every later commit and push needs the owner's explicit approval.
+- Offline suite: 67 passed + 1 skipped locally. CI shows 67 passed, 5 skipped (the
+  four live tests and the `.env`-dependent hygiene scan skip there by design).
+- The four live tests (`test_rvos_poc.py`) passed 4 of 4 after the fixture rename
+  (2026-10-06) and are run only deliberately.
+- POC3 (`rvos-poc3`) is private. The POC4 history was rebuilt twice before the first
+  push (so no fixture names appear in it, and no `Claude-Session:` trailers). Commit
+  hashes are not quoted in docs because a rewrite changes them.
+- Work tracking moved to Jira (project `RT`) on 2026-10-08. The repo docs below
+  still contain old open-issue lists (`CLAUDE.md`, `Docs/review/POC4_backlog.md`);
+  cleaning them is tracked in Jira and needs its own approved commit.
 
 ## Standing rules (the owner's gates)
 
-- Explain the exact git commands first, then wait for explicit approval before
-  every commit and every push. Stage files by name, never `git add .`.
-- Never commit anything under `Docs/Test/`. Keep fixture names, titles and
-  author names out of tracked files, commit messages and docs.
-- Never run bare `pytest` locally; name the offline files. Ask before any live
-  run and state the cost first.
+- Explain the exact git commands first, then wait for explicit approval before every
+  commit and every push. Stage files by name, never `git add .`. No `Claude-Session:`
+  trailer (`Co-Authored-By:` is fine).
+- Never commit anything under `Docs/Test/` or `Docs/handoffs/`. Keep fixture names,
+  paper titles, author names, local paths and keys out of tracked files, commit
+  messages, Jira and Confluence. `test_repo_hygiene.py` checks tracked files when
+  `RVOS_FORBIDDEN_TERMS` is set in `.env`.
+- Never run bare `pytest` locally. Name the offline files:
+  `pytest -v test_loading.py test_app.py test_pipeline_offline.py test_repo_hygiene.py`.
+  Ask before any live run and state the cost first.
 - Never print a secret. The OpenAlex key goes in an `Authorization` header.
-- The owner reviews and confirms after every increment before the next one.
+- Do not change the reasoning core (`extract_claim`, `search_openalex`,
+  `judge_novelty`, their prompts, the LangGraph wiring) without an agreed Jira story,
+  a test first, and the owner's go for any live run.
+- Test first, one commit per increment, the owner reviews after each. Found a
+  defect outside the task? Stop, report it, raise a Jira story; do not fold it in.
+- Jira and Confluence writes are confirmed by the owner too: show the exact text
+  first, one OK per batch. Keep Jira labels few and generic. A story is Done only
+  after the implementer ticks the DoD page rules in a comment and the owner confirms.
+
+## How the owner wants to work
+
+- Diagrams plus bullets, crisp answers, no "TL;DR". Honest assessments, including
+  your own mistakes; say what was not verified. Ask rather than guess (the owner can
+  grill you).
+- Small steps, every action reviewed before it is done. Agree scope and rules before
+  a new workstream starts.
+- Write a handover and handoff when a thread nears about 140k tokens; update Jira
+  fully first. Keep both local.
+
+## What POC4 changed
+
+- **UI:** dark-first page with a light variant, Verdict card first, "Show details"
+  for Claim, Method, Stated result and Related work. Plain HTML/CSS/JS, `textContent`
+  only, `https://` links only.
+- **Fixture names:** fixture paths come from `RVOS_FIXTURE_OVERLAP` /
+  `RVOS_FIXTURE_NOVEL` in the gitignored `.env`.
+- **Increments:** cited-works list, honest wait text, inline favicon; verdict length
+  constants kept at the validated 150-250 with a "Read more / Show less" clamp;
+  `MAX_PAPER_CHARS`, a `truncated` flag with a note on the page and in the report, and
+  a shared `numbered_related()` helper; seven tests for the "insufficient evidence" path;
+  this handover and a regenerated `pytest_output.txt`; `.gitattributes`.
+
+## Findings worth remembering
+
+- `claude-sonnet-5` rejects `temperature` (HTTP 400 "temperature is deprecated for
+  this model"; SDK 1.11 has no such parameter). Variance is measured, not controlled.
+  `claude-sonnet-5-5` also gives no control; moving to it is a separate decision with a
+  fresh live validation.
+- A 60-100 word judge verdict changes the judgment: on the novel fixture, 9 of 9
+  shorter verdicts said "overlaps significantly". The judge stays at 150-250 words.
+  The old prompt also failed the live check about 1 in 3 times, unexplained. The core
+  live test was deliberately left unchanged.
+- Retrieval (D2): no query shape wins consistently; the keywords chosen by
+  `extract_claim` matter more. A low related share on a novel paper is expected.
+- Facts to respect in any retrieval or RAG work: `search_openalex` is one GET with
+  header auth, retry on 429/500/503/504, `Retry-After` honoured and capped at 30 s,
+  and mocked tests. The model sees only the first 12,000 characters of a paper today.
+- Insufficient evidence: the model does say so on empty evidence (one live call).
 
 ## Gotchas
 
-- `load_dotenv()` runs when `rvos_poc` is imported, so scripts must load `.env`
-  by explicit path if they are run from elsewhere.
-- Windows console is cp1252: set `PYTHONIOENCODING=utf-8` when printing
-  titles. Python 3.11 f-strings cannot contain backslashes.
-- When a shell tool passes Python source containing a literal backslash-n it may
-  arrive as a real newline; build it with `chr(92)` or avoid it.
-- `git fetch` from the old-history backup bundle re-imports the old objects
-  (and the names) into the repository; open the bundle in a separate clone.
-- `.gitattributes` forces LF; the machine's `core.autocrlf=true` no longer
-  prints LF/CRLF warnings.
-- Do NOT add a `Claude-Session:` trailer to commit messages (it was stripped from
-  all of them before the first push). The `Co-Authored-By:` line is fine.
-- The scratch scripts used in this work (live measurement, retrieval study, the
-  headless-Chrome driver for the UI, the pre-push checks) lived in the session
-  scratchpad, are not in the repository, and hard-code local paths. Recreate them
-  as needed; do not commit them as they are.
-- The model in use is `claude-sonnet-5`. `claude-sonnet-5-5` (same price) exists;
-  moving to it would be a separate decision with a fresh live validation, and it
-  also gives no temperature control.
-- Approximate live spend for the whole POC4 effort so far: well under one US dollar
-  (largest items: the F7 measurement about $0.16, the retrieval study about $0.09).
+- `load_dotenv()` runs when `rvos_poc` is imported, so scripts must load `.env` by
+  explicit path when run from elsewhere.
+- Windows console is cp1252: set `PYTHONIOENCODING=utf-8` when printing titles.
+  Python 3.11 f-strings cannot contain backslashes. A literal backslash-n in Python
+  source passed through a shell tool may arrive as a real newline; use `chr(92)`.
+- `.gitattributes` forces LF; `core.autocrlf=true` no longer prints warnings.
+- Importing the old-history backup bundle re-imports the old objects and names; the
+  bundle was deleted. Inspect any such bundle in a separate clone.
+- Scratch scripts (live measurements, the retrieval study, the headless-Chrome driver
+  for the UI, the NDA scrub for Jira drafts) live in the session scratchpad, hard-code
+  local paths, and are not in the repo. Recreate them as needed; do not commit them.
+- The UI is checked in a real browser against a stubbed pipeline (headless Chrome over
+  the DevTools protocol); there is no JS test runner, by design.
+- Approximate live spend for the whole POC4 effort: well under one US dollar.
 
-## Open items
+## Unverified, so do not treat as fact
 
-- **P4-18 RAG** and **P4-19 PyAlex** are the key next improvements (owner
-  priority). See `handoff-rvos-poc4-next-increments.md`.
-- **P4-17:** retry a shorter verdict with a prompt that protects the judgment.
-- **P4-04:** the old prompt's occasional live-assertion failures are unexplained.
-- Owner actions: say when to create the tag and push; make `rvos-poc3` private
-  as planned.
-- **P4-20:** there are several handoff files (two entry points plus the local
-  snapshots); the owner will sort or merge them later.
+- That the live tests are stable (small sample, unexplained failures with the old
+  prompt).
+- Retrieval-relevance conclusions rest on three extractions and an LLM judge.
+- Jira/Confluence: write access beyond create, edit and link was not tested; no
+  delete operation was found, so a wrong create is removed by the owner in the UI.
+
+## Session start checklist
+
+1. `git status` (plain), `git log --oneline -10`.
+2. Read `CLAUDE.md`, `CONTEXT.md`, this file, then the agent handoff in `Docs/handoffs/`.
+3. Open the Jira board (project `RT`); ask the owner which story to work on. Do not
+   assume one.
 
 ## How to run
 
