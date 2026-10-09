@@ -3,12 +3,15 @@ RVOS demo web app: upload a paper, get the Report back on screen.
 
 A thin wrapper around rvos_poc.py, which is not modified here. Calls
 build_graph().invoke() directly rather than run(), because run() writes a
-file and returns nothing. Demo only: no auth, no storage, one user.
+file and returns nothing. Demo only: one optional shared access code
+(DEMO_ACCESS_CODE), no accounts, no storage.
 
 Run:
     uvicorn app:app --host 127.0.0.1 --port 8000
 """
 
+import hashlib
+import hmac
 import logging
 import os
 import tempfile
@@ -16,7 +19,7 @@ from pathlib import Path
 
 import anthropic
 import requests
-from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, Header, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
 from rvos_poc import (
@@ -39,7 +42,21 @@ def index():
     return FileResponse(INDEX_PAGE)
 
 
-@app.post("/analyse")
+def require_access_code(x_access_code: str | None = Header(default=None)):
+    """When DEMO_ACCESS_CODE is set, /analyse needs it in the X-Access-Code header.
+
+    Unset or empty means no check (local runs). Both values are hashed first so
+    the constant-time compare also hides their lengths. The code is never
+    logged or put in a response; a refused request costs no API credit."""
+    expected = os.environ.get("DEMO_ACCESS_CODE", "")
+    if not expected:
+        return
+    given = hashlib.sha256((x_access_code or "").encode()).digest()
+    if not hmac.compare_digest(given, hashlib.sha256(expected.encode()).digest()):
+        raise HTTPException(401, "Access code missing or wrong.")
+
+
+@app.post("/analyse", dependencies=[Depends(require_access_code)])
 def analyse(file: UploadFile):
     """Load the uploaded paper, run the pipeline, return the Report as JSON.
 

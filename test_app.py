@@ -187,6 +187,78 @@ def test_temp_file_is_deleted_after_success_and_after_failure(client, monkeypatc
     assert not any(os.path.exists(p) for p in paths)
 
 
+CODE = "test-code-123"
+
+
+def _upload_with_code(client, code=None):
+    headers = {} if code is None else {"X-Access-Code": code}
+    return client.post("/analyse", files={"file": ("paper.txt", b"Some paper text.")}, headers=headers)
+
+
+def test_without_the_access_code_analyse_is_401(client, monkeypatch):
+    monkeypatch.setenv("DEMO_ACCESS_CODE", CODE)
+    assert _upload_with_code(client).status_code == 401
+
+
+def test_with_a_wrong_access_code_analyse_is_401(client, monkeypatch):
+    monkeypatch.setenv("DEMO_ACCESS_CODE", CODE)
+    assert _upload_with_code(client, "wrong-guess").status_code == 401
+
+
+def test_with_the_right_access_code_analyse_runs(client, monkeypatch):
+    monkeypatch.setenv("DEMO_ACCESS_CODE", CODE)
+    r = _upload_with_code(client, CODE)
+    assert r.status_code == 200
+    assert r.json()["verdict"] == "Overlaps with [1]."
+
+
+def test_with_no_code_configured_analyse_needs_none(client, monkeypatch):
+    monkeypatch.delenv("DEMO_ACCESS_CODE", raising=False)
+    assert _upload_with_code(client).status_code == 200
+    monkeypatch.setenv("DEMO_ACCESS_CODE", "")
+    assert _upload_with_code(client).status_code == 200
+
+
+def test_a_refused_request_never_reaches_the_pipeline(client, monkeypatch):
+    def must_not_run():
+        raise AssertionError("pipeline built for a request without the code")
+
+    monkeypatch.setattr(app_module, "build_graph", must_not_run)
+    monkeypatch.setenv("DEMO_ACCESS_CODE", CODE)
+    assert _upload_with_code(client, "wrong-guess").status_code == 401
+
+
+def test_the_access_code_is_never_logged_or_echoed(client, monkeypatch, caplog):
+    monkeypatch.setenv("DEMO_ACCESS_CODE", CODE)
+    with caplog.at_level("DEBUG"):
+        refused = _upload_with_code(client, "wrong-guess")
+        allowed = _upload_with_code(client, CODE)
+    for text in (refused.text, allowed.text, caplog.text):
+        assert CODE not in text
+        assert "wrong-guess" not in text
+
+
+def test_the_access_code_is_compared_in_constant_time(client, monkeypatch):
+    calls = []
+    real = app_module.hmac.compare_digest
+
+    def spy(a, b):
+        calls.append(1)
+        return real(a, b)
+
+    monkeypatch.setattr(app_module.hmac, "compare_digest", spy)
+    monkeypatch.setenv("DEMO_ACCESS_CODE", CODE)
+    _upload_with_code(client, CODE)
+    assert calls
+
+
+def test_index_page_has_an_access_code_field_sent_as_a_header(client):
+    html = client.get("/").text
+    assert 'id="access-code"' in html
+    assert 'type="password"' in html
+    assert "X-Access-Code" in html
+
+
 def test_index_page_is_served(client):
     r = client.get("/")
     assert r.status_code == 200

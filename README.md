@@ -71,8 +71,39 @@ shows the first six lines and a "Read more" button when the text is longer.
 Nothing is saved: the upload goes to a temp file that is
 deleted straight away, and the report is not written anywhere. Related works
 with no abstract are greyed out because the verdict never saw them. Uploads
-over 10 MB are rejected. This is a demo: it has no login and should only be
-bound to localhost.
+over 10 MB are rejected. This is a demo: it has no accounts, and without an
+access code (next section) it should only be bound to localhost.
+
+## Access code (hosted demo)
+
+When the environment variable `DEMO_ACCESS_CODE` is set, `/analyse` refuses
+every request that does not carry that code (HTTP 401, "Access code missing
+or wrong."). The page has an "Access code" field and sends what you type in
+an `X-Access-Code` header, never in the address. A refused request is stopped
+before the pipeline runs, so it costs no API credit. If the variable is unset
+or empty there is no check, which is the local default. The page itself loads
+without a code; only running an analysis needs it.
+
+- **Choose a code:** long and random, for example
+  `python -c "import secrets; print(secrets.token_urlsafe(16))"`. Keep it in
+  your own private file. Never put it in the repo, in Jira, in a chat or in a
+  screenshot.
+- **Local run:** put `DEMO_ACCESS_CODE=<your code>` in `.env` (gitignored) to
+  try the check, or leave it empty. Over plain `http://127.0.0.1` the code
+  does not leave your machine.
+- **Hosted copy (Vercel):** add `DEMO_ACCESS_CODE` as an environment variable
+  in the project's settings and redeploy, so the new value is picked up. The
+  same place holds `ANTHROPIC_API_KEY` and the OpenAlex variables; none of
+  them belongs in a committed file.
+- **Using it:** open the page, type the code into "Access code", choose the
+  paper and press "Assess novelty". The field keeps its value until you
+  reload the page. A wrong or missing code shows "Access code missing or
+  wrong." and nothing runs.
+- **Changing it:** set the new value, redeploy, and give the new code to
+  whoever needs it. The old code stops working at once.
+- **Limits:** this is one shared code, not accounts, and it cannot tell
+  users apart. Anyone who has the code can spend your API credit, so set a
+  spend limit with Anthropic as well.
 
 ## Tests
 
