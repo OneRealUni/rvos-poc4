@@ -12,6 +12,7 @@ Run:
 
 import hashlib
 import hmac
+import json
 import logging
 import os
 import tempfile
@@ -32,6 +33,7 @@ from rvos_poc import (
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 INDEX_PAGE = Path(__file__).parent / "static" / "index.html"
+SAMPLE_DIR = Path(__file__).parent / "sample"
 
 log = logging.getLogger("uvicorn.error")
 app = FastAPI(title="RVOS demo")
@@ -40,6 +42,34 @@ app = FastAPI(title="RVOS demo")
 @app.get("/")
 def index():
     return FileResponse(INDEX_PAGE)
+
+
+@app.get("/sample/paper")
+def sample_paper():
+    """The public sample paper (open access), so the hosted demo needs no upload."""
+    path = SAMPLE_DIR / "paper.txt"
+    if not path.is_file():
+        raise HTTPException(404, "No sample paper is available.")
+    return FileResponse(path, media_type="text/plain; charset=utf-8")
+
+
+@app.get("/sample/recorded")
+def sample_recorded():
+    """A stored Report for the sample paper, always labelled recorded.
+
+    The flag is set here, not read from the file, so a stored file cannot pass
+    itself off as a live run. No API call is made, so no access code is needed."""
+    path = SAMPLE_DIR / "recorded_report.json"
+    if not path.is_file():
+        raise HTTPException(404, "No recorded example is available.")
+    try:
+        report = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(report, dict):
+            raise TypeError("not an object")
+    except (ValueError, TypeError) as e:
+        log.error("Recorded report could not be read: %s", type(e).__name__)
+        raise HTTPException(500, "The recorded example could not be read.") from e
+    return {**report, "recorded": True}
 
 
 def require_access_code(x_access_code: str | None = Header(default=None)):

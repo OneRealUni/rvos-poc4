@@ -7,7 +7,9 @@ tested here and PASS in CI; the reasoning itself stays covered by the live
 tests in test_rvos_poc.py.
 """
 
+import json
 import os
+from pathlib import Path
 
 import pytest
 import requests
@@ -257,6 +259,80 @@ def test_index_page_has_an_access_code_field_sent_as_a_header(client):
     assert 'id="access-code"' in html
     assert 'type="password"' in html
     assert "X-Access-Code" in html
+
+
+RECORDED = {**FAKE_STATE, "related": [], "verdict": "Recorded verdict.", "truncated": False}
+
+
+@pytest.fixture
+def sample_dir(tmp_path, monkeypatch):
+    monkeypatch.setattr(app_module, "SAMPLE_DIR", tmp_path)
+    return tmp_path
+
+
+def test_recorded_report_is_served_and_labelled_recorded(client, sample_dir):
+    (sample_dir / "recorded_report.json").write_text(json.dumps(RECORDED), encoding="utf-8")
+    r = client.get("/sample/recorded")
+    assert r.status_code == 200
+    assert r.json()["verdict"] == "Recorded verdict."
+    assert r.json()["recorded"] is True
+
+
+def test_the_recorded_label_cannot_be_switched_off_by_the_file(client, sample_dir):
+    (sample_dir / "recorded_report.json").write_text(json.dumps({**RECORDED, "recorded": False}), encoding="utf-8")
+    assert client.get("/sample/recorded").json()["recorded"] is True
+
+
+def test_missing_recorded_report_is_a_generic_404(client, sample_dir):
+    r = client.get("/sample/recorded")
+    assert r.status_code == 404
+    assert str(sample_dir) not in r.text
+
+
+def test_unreadable_recorded_report_is_a_generic_500(client, sample_dir):
+    for bad in ("not json at all", "[1, 2]"):
+        (sample_dir / "recorded_report.json").write_text(bad, encoding="utf-8")
+        r = client.get("/sample/recorded")
+        assert r.status_code == 500
+        assert "not json" not in r.text
+        assert str(sample_dir) not in r.text
+
+
+def test_sample_paper_is_served_as_text_and_missing_is_404(client, sample_dir):
+    assert client.get("/sample/paper").status_code == 404
+    (sample_dir / "paper.txt").write_text("Open access text.", encoding="utf-8")
+    r = client.get("/sample/paper")
+    assert r.status_code == 200
+    assert r.text == "Open access text."
+    assert "text/plain" in r.headers["content-type"]
+
+
+def test_sample_routes_need_no_access_code(client, sample_dir, monkeypatch):
+    (sample_dir / "paper.txt").write_text("Open access text.", encoding="utf-8")
+    (sample_dir / "recorded_report.json").write_text(json.dumps(RECORDED), encoding="utf-8")
+    monkeypatch.setenv("DEMO_ACCESS_CODE", CODE)
+    assert client.get("/sample/paper").status_code == 200
+    assert client.get("/sample/recorded").status_code == 200
+
+
+def test_a_committed_recorded_report_has_every_report_field():
+    path = Path(app_module.SAMPLE_DIR) / "recorded_report.json"
+    if not path.is_file():
+        pytest.skip("no recorded report committed yet")
+    report = json.loads(path.read_text(encoding="utf-8"))
+    assert set(report) >= {"claim", "method", "result", "related", "verdict", "truncated"}
+    for work in report["related"]:
+        assert set(work) >= {"n", "title", "year", "url", "has_abstract"}
+
+
+def test_index_page_offers_the_sample_and_the_recorded_example(client):
+    html = client.get("/").text
+    assert 'id="use-sample"' in html
+    assert 'id="show-recorded"' in html
+    assert 'id="recorded-banner"' in html
+    assert "Recorded result, not live" in html
+    assert "/sample/paper" in html
+    assert "/sample/recorded" in html
 
 
 def test_index_page_is_served(client):

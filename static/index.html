@@ -43,6 +43,10 @@
                      border: 1px solid var(--line); border-radius: 12px; background: var(--bg);
                      color: var(--fg); font: inherit; }
 
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .recorded-banner { margin: 0 0 16px; padding: 10px 14px; border: 1.5px solid var(--focus);
+                     border-radius: 12px; font-weight: 600; }
+
   button { font: inherit; font-weight: 600; border-radius: 10px; padding: 11px 20px; cursor: pointer; }
   button.primary { background: var(--grad); color: var(--btn-fg); border: 0; }
   button.secondary { background: transparent; color: var(--fg); border: 1px solid var(--line); }
@@ -98,12 +102,17 @@
     <label class="field" for="access-code">Access code (only if the host asks for one)</label>
     <input type="password" id="access-code" autocomplete="off">
     <button type="submit" id="go" class="primary">Assess novelty</button>
+    <div class="actions">
+      <button type="button" id="use-sample" class="secondary">Use the sample paper</button>
+      <button type="button" id="show-recorded" class="secondary">Show recorded example</button>
+    </div>
     <p class="notice">The first 12,000 characters are sent to Anthropic's API and search keywords to OpenAlex. Nothing is saved by this app.</p>
     <div id="status" role="status" hidden></div>
     <div id="error" role="alert" hidden></div>
   </form>
 
   <section id="report" hidden>
+    <p class="recorded-banner" id="recorded-banner" role="note" hidden>Recorded result, not live. This is a stored example, not a new analysis.</p>
     <div class="verdict-card">
       <h2>Verdict</h2>
       <div class="verdict" id="verdict"></div>
@@ -200,6 +209,7 @@ function renderReport(r) {
   $("result").textContent = r.result;
   $("verdict").textContent = r.verdict;
   $("truncation-note").hidden = !r.truncated;
+  $("recorded-banner").hidden = r.recorded !== true;
 
   const list = $("related");
   list.replaceChildren();
@@ -214,18 +224,42 @@ function renderReport(r) {
   updateVerdictToggle();
 }
 
-$("form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const file = $("file").files[0];
-  if (!file) return;
+const ACTION_IDS = ["go", "use-sample", "show-recorded"];
 
-  const go = $("go");
-  go.disabled = true;
+function setBusy(busy) {
+  for (const id of ACTION_IDS) $(id).disabled = busy;
+}
+
+// The recorded example is fetched once when the page opens and kept, so the
+// button still works if the network drops later during a demo.
+let recorded = null;
+async function fetchRecorded() {
+  const resp = await fetch("/sample/recorded");
+  if (!resp.ok) throw new Error("no recorded example");
+  recorded = await resp.json();
+  return recorded;
+}
+fetchRecorded().catch(() => { /* the button reports it if it is needed */ });
+
+async function showRecorded(note) {
+  try {
+    renderReport(recorded || await fetchRecorded());
+    show($("error"), note ? note + " Showing the recorded example instead." : "");
+  } catch (_) {
+    show($("error"), (note ? note + " " : "") + "No recorded example is available.");
+  }
+}
+
+async function runAnalysis(file) {
+  setBusy(true);
   show($("error"), "");
   $("report").hidden = true;
   setDetails(false);
   show($("status"), "Working… this usually takes under a minute.");
 
+  // A busy or broken server falls back to the recorded example; a mistake by
+  // the user (wrong code, bad file) does not.
+  let fallbackNote = null;
   try {
     const body = new FormData();
     body.append("file", file);
@@ -234,18 +268,47 @@ $("form").addEventListener("submit", async (e) => {
     const resp = await fetch("/analyse", { method: "POST", body, headers });
     let data = null;
     try { data = await resp.json(); } catch (_) { /* non-JSON error body */ }
-    if (!resp.ok) {
-      show($("error"), (data && typeof data.detail === "string" && data.detail)
-        || "Something went wrong. Please try again.");
-      return;
+    if (resp.ok) {
+      renderReport(data);
+    } else {
+      const message = (data && typeof data.detail === "string" && data.detail)
+        || "Something went wrong. Please try again.";
+      if (resp.status === 429 || resp.status >= 500) fallbackNote = message;
+      else show($("error"), message);
     }
-    renderReport(data);
   } catch (_) {
-    show($("error"), "Could not reach the server. Is it still running?");
+    fallbackNote = "Could not reach the server.";
   } finally {
     show($("status"), "");
-    go.disabled = false;
+    setBusy(false);
   }
+  if (fallbackNote) await showRecorded(fallbackNote);
+}
+
+$("form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const file = $("file").files[0];
+  if (file) runAnalysis(file);
+});
+
+$("use-sample").addEventListener("click", async () => {
+  let file = null;
+  try {
+    const resp = await fetch("/sample/paper");
+    if (!resp.ok) throw new Error("no sample paper");
+    file = new File([await resp.blob()], "sample-paper.txt", { type: "text/plain" });
+  } catch (_) {
+    show($("error"), "The sample paper is not available.");
+    return;
+  }
+  await runAnalysis(file);
+});
+
+$("show-recorded").addEventListener("click", async () => {
+  $("report").hidden = true;
+  setDetails(false);
+  show($("error"), "");
+  await showRecorded("");
 });
 </script>
 </body>

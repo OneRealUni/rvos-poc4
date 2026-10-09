@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 # httpx is only there for the FastAPI TestClient.
 DEV_ONLY = {"pytest", "ruff", "reportlab", "httpx", "uvicorn"}
-UPLOADABLE = {"app.py", "rvos_poc.py", "requirements.txt", ".python-version", "static"}
+UPLOADABLE = {"app.py", "rvos_poc.py", "requirements.txt", ".python-version", "static", "sample"}
 
 
 def package_names(path):
@@ -43,3 +43,7 @@ def test_vercelignore_allows_only_the_app_files():
     assert rules[0] == "/*"
     assert all(rule.startswith("!") for rule in rules[1:])
     assert {rule[1:] for rule in rules[1:]} <= UPLOADABLE
+
+
+def test_vercelignore_ships_the_sample_folder():
+    assert "!sample" in (ROOT / ".vercelignore").read_text(encoding="utf-8").splitlines()
