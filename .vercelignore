@@ -1,0 +1,8 @@
+# Allowlist: a command-line deploy uploads only these files. Vercel's default
+# exclusions do not cover .env or Docs/ (NDA papers, local handoff files).
+/*
+!app.py
+!rvos_poc.py
+!requirements.txt
+!.python-version
+!static
