@@ -1,6 +1,6 @@
 # POC4 handover
 
-The one document the owner and Claude both read and improve. Updated 2026-10-08.
+The one document the owner and Claude both read and improve. Updated 2026-10-10.
 POC4 is POC3 plus a new UI and a set of tracked fixes. The POC3 history, including
 the three code-review hand-overs and the OpenAlex incident, is archived in
 `Docs/review/POC3_handover.md`.
@@ -36,6 +36,37 @@ Handoff is only for agents. There is nothing else.
 - Work tracking moved to Jira (project `RT`) on 2026-10-08. The repo docs below
   still contain old open-issue lists (`CLAUDE.md`, `Docs/review/POC4_backlog.md`);
   cleaning them is tracked in Jira and needs its own approved commit.
+- 2026-10-09: Jira alignment after an external review of the repo and Jira (links,
+  acceptance criteria, priorities, new stories, an epic for the leftover migration work
+  and an exploratory epic for the next demo phase). The detail is in Jira, not here.
+  That evening the stakeholder demo (2026-10-10, 14:00 UK) became committed, and the
+  hosted copy (Jira RT-32) was started on the local branch `demo-vercel`: five commits
+  on top of `main`, **pushed to GitHub on 2026-10-10 on the owner's
+  explicit yes** (the branch and the local tag; `main` untouched; check `git branch -vv`;
+  every later push still needs explicit approval). Built so far: a deploy-only `requirements.txt` plus
+  `requirements-dev.txt`, a `.vercelignore` upload allowlist, `.python-version` 3.14,
+  an access code, the sample-paper and recorded-fallback routes with page buttons, and a
+  per-day cap (`DEMO_DAILY_CAP`, best-effort on serverless; the owner plans 40 on the
+  host). All of it is committed, including the sample paper and its recorded result (a CC
+  BY article; one live run made 2026-10-10). The Vercel project `rvos-poc4` exists and
+  was deployed once by the command line (no push). Vercel makes a project's first
+  deployment the production one, so the hosted copy is already live behind the access
+  code; later `vercel` runs are previews and need `vercel --prod` to go to production.
+  The project is disconnected from GitHub, so a push does not deploy. The environment
+  variables are set on the host (names only here). The owner rehearsed one run on the
+  host with the real access code (about 10 s, no error; the runtime log had no error
+  lines and no secrets). An external review (Claude.ai chat) produced a corrections list
+  that drives the next session; its facts were checked against git, the tests and Jira on
+  2026-10-10 (offline suite 99 passed, ruff clean, `rvos_poc.py` identical to `main`).
+  Not verified: the Hobby plan's terms for this use, several simultaneous users, an
+  Anthropic-side spend limit, and CI on the branch (its first run is the push of 2026-10-10; read the result). Demo: 2026-10-10,
+  14:00 UK. Before it: the owner's spend-limit check, a second rehearsal and an optional
+  local tag of the deployed commit. After it: the aftercare list kept in Jira (rotate the
+  access code and the key, review the cap, decide on pushing, on the `CLAUDE.md`
+  non-goals and on Hobby terms). `CLAUDE.md` still says requirements and CI are untouched,
+  CI shows 67 passed and 5 skipped, and "no auth, no deployment" are non-goals; all four
+  are stale on this branch and wait for that decision. The later phase (website and
+  scorecard testing) stays exploratory.
 
 ## Standing rules (the owner's gates)
 
@@ -117,6 +148,32 @@ Handoff is only for agents. There is nothing else.
 - The UI is checked in a real browser against a stubbed pipeline (headless Chrome over
   the DevTools protocol); there is no JS test runner, by design.
 - Approximate live spend for the whole POC4 effort: well under one US dollar.
+- `vercel link` (and plain `vercel`) can do more than asked: it connected the project to
+  the GitHub repo, wrote `.env.local` with a Vercel token, and appended rules to
+  `.gitignore`. All three were undone by hand (`vercel git disconnect`, delete the file,
+  `git checkout -- .gitignore`). Check `git status` after any Vercel command.
+- Hosted copy: a Vercel command-line deploy uploads whatever its default exclusions miss,
+  and those miss `.env` and `Docs/`. `.vercelignore` is therefore an allowlist, guarded by
+  `test_deploy_config.py`. Vercel offers Python 3.12 to 3.14 only; `.python-version` pins
+  3.14 and the offline suite passes on 3.11 and 3.14. A request body is capped at 4.5 MB.
+- The access code is the host variable `DEMO_ACCESS_CODE` (also the owner's gitignored
+  `.env` and private file). Never put it in the repo or Jira. See the README section
+  "Access code (hosted demo)".
+- The real-browser check of the page (stub server plus headless Chrome over DevTools, 16
+  checks) lives only in the session scratchpad; Jira RT-36 decides whether to commit it.
+- Demo sample paper: chosen (a CC BY PLOS ONE article; see `sample/README.md` for the
+  citation, licence check and the changes made). Note that the tool finds that published
+  paper itself in OpenAlex, so the recorded verdict says it overlaps with it; the owner
+  accepted that for now and will revisit when there are more libraries to check against. Three
+  earlier candidates were rejected: one is on the
+  forbidden-terms list in `.env`; one has no licence that allows redistribution (public is
+  not the same as licensed for a public repository); one is open access under CC BY-NC-ND
+  but its text contains a forbidden-list term, which the owner ruled not acceptable.
+  Any new candidate must be CC BY (so a text copy is allowed), pass a forbidden-terms count
+  on its extracted text (the hygiene test cannot see inside a PDF), and carry its credit on
+  the page and in `sample/README.md`. Loading a 17-page PDF takes 7 to 10 s because the
+  loader reads every page. Publisher sites such as ScienceDirect return 403 to scripts, so
+  the owner downloads the PDF in a browser.
 
 ## Unverified, so do not treat as fact
 
@@ -125,6 +182,10 @@ Handoff is only for agents. There is nothing else.
 - Retrieval-relevance conclusions rest on three extractions and an LLM judge.
 - Jira/Confluence: write access beyond create, edit and link was not tested; no
   delete operation was found, so a wrong create is removed by the owner in the UI.
+- Checked on 2026-10-09: comments, issue links, editing a description or priority and
+  setting the parent of an existing story all work through the connector. Status
+  transitions were not tried. No operation to remove an issue link was found (the
+  owner removed one in the UI); deleting a comment was not tried.
 
 ## Suggested skills
 
@@ -151,7 +212,7 @@ Handoff is only for agents. There is nothing else.
 ```bash
 python -m venv venv
 venv\Scripts\activate              # Windows
-pip install -r requirements.txt
+pip install -r requirements-dev.txt   # requirements.txt alone is the deploy list
 cp .env.example .env               # Anthropic key, OpenAlex mailto + key, fixture paths
 uvicorn app:app --host 127.0.0.1 --port 8000      # run from this folder
 ruff check .
