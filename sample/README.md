@@ -1,23 +1,37 @@
 # Sample paper and recorded example
 
-Two files belong in this folder. The hosted demo serves them so it never needs
-an upload and has something to show if a live run fails.
+The hosted demo serves two files from this folder, so it never needs an upload
+and has something to show if a live run fails.
 
 | File | What it is |
 |---|---|
-| `paper.txt` | The text of one public, open-access paper, served at `/sample/paper` and used by the "Use the sample paper" button. |
+| `paper.txt` | The sample paper as plain text, served at `/sample/paper` and used by the "Use the sample paper" button. |
 | `recorded_report.json` | A stored Report for that paper, served at `/sample/recorded` and always shown with the label "Recorded result, not live". |
 
-## Rules
+## The sample paper
 
-- **Only an open-access paper whose licence allows redistribution** (for
-  example CC BY). This repository is public.
-- **Never an NDA paper**, and nothing from `Docs/Test/`.
-- Record the paper's public identifier (DOI, arXiv or OpenAlex ID) and its
-  licence below when the files are added.
+- **Paper:** G. M. Foody (2023), "Challenges in the real world use of classification
+  accuracy metrics: From recall and precision to the Matthews correlation
+  coefficient", PLOS ONE 18(10): e0291908.
+- **Identifier:** DOI 10.1371/journal.pone.0291908
+- **Licence:** CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Checked in the
+  publisher's own XML, which carries the licence statement, and in the PDF's copyright
+  line, and listed as `cc-by` in OpenAlex on 2026-10-10.
+- **Changes made (CC BY asks for this):** the text was extracted from the publisher's
+  XML (`https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0291908&type=manuscript`).
+  Kept: the title, the abstract and the body paragraphs. Left out: figures, tables,
+  formulas (marked `[formula]`), references and layout. Nothing was reworded.
+- Credit is shown on the page, under the sample button.
 
-Paper identifier: _to be added_
-Licence: _to be added_
+## Rules for any replacement
+
+- Only an open-access paper whose licence allows redistribution and changes, for
+  example CC BY. **Not** NC (non-commercial) or ND (no derivatives): a text copy is a
+  change. This repository is public.
+- Never an NDA paper, and nothing from `Docs/Test/`.
+- Count the forbidden terms in its text first (`test_repo_hygiene.py` cannot look
+  inside a PDF), and check the licence in the paper itself, not only in a database.
+- Change this section and the credit line on the page together.
 
 ## Making `recorded_report.json`
 

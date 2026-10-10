@@ -335,6 +335,22 @@ def test_index_page_offers_the_sample_and_the_recorded_example(client):
     assert "/sample/recorded" in html
 
 
+def test_index_page_credits_the_sample_paper_its_licence_and_the_changes(client):
+    html = client.get("/").text
+    assert "10.1371/journal.pone.0291908" in html
+    assert "Foody" in html
+    assert "CC BY 4.0" in html
+    assert "creativecommons.org/licenses/by/4.0" in html
+    assert "text extracted" in html.lower()
+
+
+def test_a_committed_sample_paper_is_readable_text():
+    path = Path(app_module.SAMPLE_DIR) / "paper.txt"
+    if not path.is_file():
+        pytest.skip("no sample paper committed yet")
+    assert len(rvos_poc.load_paper_text(str(path))) > 5000
+
+
 def test_index_page_is_served(client):
     r = client.get("/")
     assert r.status_code == 200
