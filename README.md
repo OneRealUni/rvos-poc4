@@ -105,6 +105,28 @@ without a code; only running an analysis needs it.
   users apart. Anyone who has the code can spend your API credit, so set a
   spend limit with Anthropic as well.
 
+## Daily limit (hosted demo)
+
+When the environment variable `DEMO_DAILY_CAP` is set to a whole number,
+`/analyse` allows that many analyses per UTC day and then answers HTTP 429
+("The daily limit for this demo has been reached. Please try again
+tomorrow."). The page then shows the recorded example instead. Unset or empty
+means no cap, which is the local default.
+
+- **What counts:** an analysis that reached the pipeline. Requests refused for a
+  wrong access code, and files rejected as bad, do not count. A request over the
+  cap is stopped before the paper is loaded.
+- **Choosing a number:** one run costs roughly 2 to 5 US cents (an estimate, not
+  a measurement), so a cap of 20 is at most about one dollar a day. To allow more,
+  change the variable and redeploy; no code change is needed.
+- **A value that is not a whole number** (for example `abc` or `-1`) is treated
+  as 0 and blocks every run, so a typo cannot quietly switch the limit off.
+- **Best-effort only:** the count lives in memory inside one server process. On a
+  serverless host such as Vercel, several instances can run at once and each counts
+  separately, and a restarted instance forgets its count. The cap therefore slows
+  spending but does not guarantee a limit. **The spend limit you set with Anthropic
+  is the real ceiling**, so set that too.
+
 ## Tests
 
 ```bash

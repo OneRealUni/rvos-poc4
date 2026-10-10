@@ -16,6 +16,8 @@ import json
 import logging
 import os
 import tempfile
+import threading
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import anthropic
@@ -86,7 +88,52 @@ def require_access_code(x_access_code: str | None = Header(default=None)):
         raise HTTPException(401, "Access code missing or wrong.")
 
 
-@app.post("/analyse", dependencies=[Depends(require_access_code)])
+# Analyses started today (UTC) in this process. On a serverless host each
+# instance has its own count and loses it on restart, so DEMO_DAILY_CAP is
+# best-effort; the spend limit set with Anthropic is the real ceiling.
+_usage: dict = {"day": None, "count": 0}
+_usage_lock = threading.Lock()
+
+
+def _today() -> date:
+    return datetime.now(timezone.utc).date()
+
+
+def _daily_cap():
+    """None when DEMO_DAILY_CAP is unset or empty (no cap). A value that is not
+    a whole number counts as 0, so a typo blocks runs instead of quietly
+    switching the protection off."""
+    raw = os.environ.get("DEMO_DAILY_CAP", "").strip()
+    if not raw:
+        return None
+    return int(raw) if raw.isdigit() else 0
+
+
+def _count_today() -> int:
+    """Runs so far today; call with _usage_lock held."""
+    today = _today()
+    if _usage["day"] != today:
+        _usage["day"], _usage["count"] = today, 0
+    return _usage["count"]
+
+
+def require_daily_headroom():
+    cap = _daily_cap()
+    if cap is None:
+        return
+    with _usage_lock:
+        if _count_today() >= cap:
+            raise HTTPException(429, "The daily limit for this demo has been reached. Please try again tomorrow.")
+
+
+def count_run():
+    """Called just before the pipeline, so only real runs are counted."""
+    with _usage_lock:
+        _count_today()
+        _usage["count"] += 1
+
+
+@app.post("/analyse", dependencies=[Depends(require_access_code), Depends(require_daily_headroom)])
 def analyse(file: UploadFile):
     """Load the uploaded paper, run the pipeline, return the Report as JSON.
 
@@ -123,6 +170,7 @@ def analyse(file: UploadFile):
     finally:
         os.unlink(tmp_path)
 
+    count_run()
     try:
         result = build_graph().invoke({"paper_text": paper_text})
     except (anthropic.APIError, requests.RequestException, ValueError) as e:
