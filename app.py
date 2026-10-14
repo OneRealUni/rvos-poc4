@@ -17,7 +17,7 @@ import logging
 import os
 import tempfile
 import threading
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import anthropic
@@ -96,7 +96,7 @@ _usage_lock = threading.Lock()
 
 
 def _today() -> date:
-    return datetime.now(timezone.utc).date()
+    return datetime.now(UTC).date()
 
 
 def _daily_cap():

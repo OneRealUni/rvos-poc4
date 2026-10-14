@@ -4,5 +4,5 @@
 uvicorn>=0.30.0,<1.0.0
 httpx>=0.27.0,<1.0.0       # FastAPI TestClient
 pytest>=8.0.0,<10.0.0
-ruff>=0.6.0,<1.0.0
+ruff==0.16.10
 reportlab>=4.0.0,<6.0.0    # generates synthetic PDFs for test_loading.py
