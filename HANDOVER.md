@@ -67,6 +67,34 @@ Handoff is only for agents. There is nothing else.
   CI shows 67 passed and 5 skipped, and "no auth, no deployment" are non-goals; all four
   are stale on this branch and wait for that decision. The later phase (website and
   scorecard testing) stays exploratory.
+- **2026-10-14/15 — RT-39 + RT-41 delivered and deployed.** Sprint 1 (id 321) is
+  active; Sprint 0 (id 354, future/never-started) holds the legacy-done items
+  (RT-15–19, now Done + pointed), which show only via JQL (`Sprint = "RT Sprint 0"`),
+  not on the board. All stories are pointed (`customfield_10037`; epics unpointed).
+  **RT-39** (recolour): a dark-`:root`-only hex change to `static/index.html`
+  (bg `#0f172a`, card `#1e293b`, fg `#e2e8f0`, muted `#94a3b8`, line `#2d3b55`,
+  link `#06b6d4`); gradient, favicon and the light block are unchanged (option A —
+  `--grad` is shared with the primary button, so brightening it fails white-text AA).
+  Commit `b1fc05e`; CI green; **deployed to production**; Done. Light mode is
+  unchanged by design (the reference site is dark-only), so the recolour shows only
+  in dark mode. **RT-41** (new Bug): the branch's CI was red on a pre-existing ruff
+  UP017 at `app.py:99` — fixed to `datetime.UTC` and **pinned `ruff==0.16.10`** in
+  `requirements-dev.txt`; CI green (run 38636103258), commit `c10a77e`, Done.
+  **Deploy procedure (important):** the Vercel project is disconnected from GitHub, so
+  a push does not deploy; deploy with **`vercel --prod --scope radha-81fe`** from the
+  local tree (plain `vercel --prod` returns "Not authorized" without the scope). The
+  live site is healthy. **`main` is now 8 commits behind `demo-vercel`; the
+  merge-to-main policy is undecided.** Owner preference updated: **no `Co-Authored-By`
+  trailer** (subject-only commits). The harness may auto-deny git-write Bash even after
+  a verbal OK; the owner then approves the permission prompt or runs the command with
+  `!`. **Claude.ai review (2026-10-15, comments on RT-39 and RT-33) — open decisions
+  for later, not worked yet:** (1) split the shared `--grad` token in RT-33 so the
+  brand gradient can be vivid while the button keeps AA, then revisit RT-39's palette;
+  (2) light-mode colourful tints (RT-33); (3) a scorecard needing a new numeric signal
+  would touch the reasoning core (`app.py`/`rvos_poc.py`) — own story, test-first,
+  owner go; a scorecard from existing `/analyse` fields stays front-end; (4) the
+  merge-to-main policy. **RT-40 starts after the compact;** RT-39/41 may need rework
+  first depending on the owner's review.
 
 ## Standing rules (the owner's gates)
 
