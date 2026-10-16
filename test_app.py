@@ -370,6 +370,17 @@ def test_index_page_shows_cited_works_under_the_verdict(client):
     assert 'id="cited-list"' in html
 
 
+def test_first_view_does_not_reveal_the_cited_block(client):
+    # RT-40: the duplicated "Cited in the verdict" block is not shown on the
+    # first view (the same works already appear under "Show details"). Its
+    # markup stays, hidden by default; the script no longer populates or
+    # reveals it, and "Read more" only expands the verdict text.
+    html = client.get("/").text
+    assert 'id="cited" hidden' in html      # markup present and hidden by default
+    assert "citedWorks" not in html         # cited-works computation removed
+    assert '"cited").hidden' not in html    # no reveal-on-render
+
+
 def test_index_page_has_a_truncation_note(client):
     assert 'id="truncation-note"' in client.get("/").text
 

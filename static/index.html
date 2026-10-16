@@ -197,13 +197,6 @@ function workItem(w) {
   return li;
 }
 
-// The related works the verdict cites by number ("[2]"): looked up in the
-// related-work list, so numbers that match no work are ignored.
-function citedWorks(verdict, related) {
-  const numbers = new Set(Array.from(verdict.matchAll(/\[(\d+)\]/g), (m) => Number(m[1])));
-  return related.filter((w) => numbers.has(w.n));
-}
-
 function renderReport(r) {
   $("claim").textContent = r.claim;
   $("method").textContent = r.method;
@@ -215,10 +208,6 @@ function renderReport(r) {
   const list = $("related");
   list.replaceChildren();
   for (const w of r.related) list.append(workItem(w));
-
-  const cited = citedWorks(r.verdict, r.related);
-  $("cited-list").replaceChildren(...cited.map(workItem));
-  $("cited").hidden = cited.length === 0;
 
   $("report").hidden = false;
   setVerdictExpanded(false);
