@@ -99,3 +99,6 @@ patches/
 
 # The single agent handoff file from the /handoff command (kept on the owner's machine only)
 Docs/handoff/
+
+# Owner+Claude continuity doc: internal notes, kept local like the handoff (public repo)
+HANDOVER.md
