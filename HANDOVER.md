@@ -81,8 +81,9 @@ Handoff is only for agents. There is nothing else.
   UP017 at `app.py:99` — fixed to `datetime.UTC` and **pinned `ruff==0.16.10`** in
   `requirements-dev.txt`; CI green (run 38636103258), commit `c10a77e`, Done.
   **Deploy procedure (important):** the Vercel project is disconnected from GitHub, so
-  a push does not deploy; deploy with **`vercel --prod --scope radha-81fe`** from the
-  local tree (plain `vercel --prod` returns "Not authorized" without the scope). The
+  a push does not deploy; deploy with **`vercel --prod --scope <your-vercel-scope>`** from the
+  local tree (plain `vercel --prod` returns "Not authorized" without the scope; the real
+  scope name is kept local, not in this file). The
   live site is healthy. **`main` is now 8 commits behind `demo-vercel`; the
   merge-to-main policy is undecided.** Owner preference updated: **no `Co-Authored-By`
   trailer** (subject-only commits). The harness may auto-deny git-write Bash even after
