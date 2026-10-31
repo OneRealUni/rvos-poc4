@@ -121,3 +121,9 @@ ANTHROPIC_API_KEY secret is set: the workflow still passes
 `secrets.ANTHROPIC_API_KEY`, which therefore arrives empty, and the
 reasoning tests would skip without the NDA fixtures anyway. A public repo
 has no use for an idle credential.
+
+## Agent skills
+This repo uses Matt Pocock's engineering skills (editable, in `.claude/skills/`, local-only). Their
+configuration, triage labels, domain-doc layout and the operating model are kept **private** in
+`Docs/agents/`, `Docs/Govern/` and `Docs/ADR/` (mirrored to the private Drive folder), per the
+startup-privacy policy. Read those locally before using the skills.

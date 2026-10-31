@@ -102,3 +102,18 @@ Docs/handoff/
 
 # Owner+Claude continuity doc: internal notes, kept local like the handoff (public repo)
 HANDOVER.md
+
+# Local mirror of Claude's internal memory (holds Vercel scope, Jira cloudId): local only
+Docs/Memory/
+
+# Project docs live in the private Google Drive folder, not the public repo (decision B, mid-setup).
+# Ignore the whole Docs/ tree. Already-tracked Docs/review stays tracked until explicitly retracted
+# with `git rm --cached`. ADR-001 still says specs/ADRs belong in GitHub — revisit after setup.
+Docs/
+
+# Local agent tooling: editable skills installer scaffold + its lockfile. Not repo content.
+.agents/
+skills-lock.json
+
+# GLOSSARY carries the venture wedge + dimensions (startup strategy): keep private.
+GLOSSARY.md
