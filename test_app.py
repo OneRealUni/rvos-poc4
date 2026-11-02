@@ -395,3 +395,36 @@ def test_index_page_has_inline_favicon_and_accurate_wait_text(client):
     html = client.get("/").text
     assert 'rel="icon"' in html
     assert "about a minute" not in html
+
+
+# RT-33: project title + a passive evidence scorecard on the first view. These
+# assert the served page's static content (the seam test_app.py can see); the
+# scorecard's numbers are filled by JS and are covered by the real-browser check.
+
+PROJECT_TITLE = "Agent-powered Research-to-Product Verification Platform"
+
+
+def test_index_page_shows_the_project_title_in_header_and_tab(client):
+    html = client.get("/").text
+    assert f"<title>{PROJECT_TITLE}</title>" in html
+    assert f"<h1>{PROJECT_TITLE}</h1>" in html
+
+
+def test_index_page_has_an_evidence_scorecard_in_the_first_view(client):
+    html = client.get("/").text
+    assert 'id="scorecard"' in html
+    # the three facts' labels are static; the numbers are set by JS
+    assert "related works found" in html
+    assert "with abstracts" in html
+    assert "truncated:" in html
+
+
+def test_index_page_shows_the_retrieval_caveat(client):
+    html = client.get("/").text
+    assert "retrieved automatically and may include the source paper" in html
+
+
+def test_index_page_shows_the_venture_verdict_path(client):
+    html = client.get("/").text
+    assert "one of five dimensions of the full venture verdict" in html
+    assert "scientific credibility, novelty, feasibility, competition, market" in html

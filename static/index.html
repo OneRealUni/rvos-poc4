@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">
-<title>RVOS novelty check</title>
+<title>Agent-powered Research-to-Product Verification Platform</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234f46e5'/%3E%3Cstop offset='1' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3C/svg%3E">
 <style>
   :root {
@@ -74,6 +74,9 @@
   .cited h2 { margin: 0 0 4px; }
   .cited ol.related li:last-child { border-bottom: 0; }
   #details-toggle { margin-top: 16px; }
+  .scorecard { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .scorecard-line { margin: 0; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+  .scorecard .notice { margin: 8px 0 0; }
 
   #details { margin-top: 8px; }
   #details p { margin: 0; overflow-wrap: anywhere; }
@@ -94,7 +97,7 @@
 </head>
 <body>
 <main>
-  <h1>RVOS novelty check</h1>
+  <h1>Agent-powered Research-to-Product Verification Platform</h1>
   <p class="lede">Upload a paper (.pdf, .docx or .txt) to see how novel its claim looks against related work.</p>
 
   <form id="form" class="card">
@@ -119,6 +122,15 @@
       <div class="verdict" id="verdict"></div>
       <p class="notice" id="truncation-note" hidden>Only the first 12,000 characters of this paper were assessed.</p>
       <button type="button" id="verdict-toggle" class="linklike" aria-expanded="false" aria-controls="verdict" hidden>Read more</button>
+      <div class="scorecard" id="scorecard">
+        <p class="scorecard-line">
+          <span id="sc-found">0</span> related works found ·
+          <span id="sc-abstracts">0</span> with abstracts ·
+          truncated: <span id="sc-truncated">no</span>
+        </p>
+        <p class="notice" id="scorecard-caveat">Related work is retrieved automatically and may include the source paper.</p>
+        <p class="notice" id="venture-path">Novelty is one of five dimensions of the full venture verdict — scientific credibility, novelty, feasibility, competition, market — in development.</p>
+      </div>
       <div class="cited" id="cited" hidden>
         <h2>Cited in the verdict</h2>
         <ol class="related" id="cited-list"></ol>
@@ -204,6 +216,11 @@ function renderReport(r) {
   $("verdict").textContent = r.verdict;
   $("truncation-note").hidden = !r.truncated;
   $("recorded-banner").hidden = r.recorded !== true;
+
+  // Evidence scorecard: factual counts from the response, no verdict parsing.
+  $("sc-found").textContent = r.related.length;
+  $("sc-abstracts").textContent = r.related.filter((w) => w.has_abstract).length;
+  $("sc-truncated").textContent = r.truncated ? "yes" : "no";
 
   const list = $("related");
   list.replaceChildren();
