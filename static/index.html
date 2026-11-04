@@ -13,6 +13,7 @@
     --line: #2d3b55; --link: #06b6d4; --err: #ff8a8a;
     --grad: linear-gradient(135deg, #4f46e5, #7c3aed);
     --btn-fg: #ffffff; --focus: #22d3ee;
+    --sc-fill: #7c8aa5; --sc-track: #334155;
   }
   @media (prefers-color-scheme: light) {
     :root {
@@ -20,6 +21,7 @@
       --bg: #f6f7fb; --fg: #14182a; --muted: #5a6481; --card: #ffffff;
       --line: #dfe3ef; --link: #4338ca; --err: #b3261e;
       --focus: #0891b2;
+      --sc-fill: #64748b; --sc-track: #e5e9f2;
     }
   }
   * { box-sizing: border-box; }
@@ -78,6 +80,29 @@
   .scorecard-line { margin: 0; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
   .scorecard .notice { margin: 8px 0 0; }
 
+  /* Research scorecard (RT-49) -- Variant A: stacked rows, neutral segmented bars. */
+  .research-scorecard { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .rsc-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 4px; }
+  .rsc-title { font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+               color: var(--muted); margin: 0; }
+  .rsc-prov-chip { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+                   color: var(--fg); background: var(--bg); border: 1px solid var(--line);
+                   border-radius: 999px; padding: 2px 9px; }
+  .rsc-band-line { margin: 0 0 8px; font-size: 0.9375rem; }
+  .rsc-band { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .rsc-rows { margin: 0; }
+  .rsc-row { display: flex; align-items: center; gap: 14px; padding: 9px 0;
+             border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .rsc-row:last-child { border-bottom: 0; }
+  .rsc-label { flex: 1 0 40%; font-size: 0.9375rem; }
+  .rsc-note { color: var(--muted); font-size: 0.75rem; }
+  .rsc-meter { display: flex; gap: 3px; flex: 0 0 150px; }
+  .rsc-meter span { height: 10px; flex: 1; border-radius: 2px; background: var(--sc-track); }
+  .rsc-meter span.on { background: var(--sc-fill); }
+  .rsc-val { margin-left: auto; text-align: right; color: var(--muted);
+             font-variant-numeric: tabular-nums; }
+  .rsc-na-text { font-style: italic; }
+
   #details { margin-top: 8px; }
   #details p { margin: 0; overflow-wrap: anywhere; }
   ol.related { padding-left: 0; list-style: none; margin: 0; }
@@ -130,6 +155,40 @@
         </p>
         <p class="notice" id="scorecard-caveat">Related work is retrieved automatically and may include the source paper.</p>
         <p class="notice" id="venture-path">Novelty is one of five dimensions of the full venture verdict — scientific credibility, novelty, feasibility, competition, market — in development.</p>
+      </div>
+      <div class="research-scorecard" id="research-scorecard" hidden>
+        <div class="rsc-head">
+          <p class="rsc-title">Research scorecard</p>
+          <span class="rsc-prov-chip">provisional</span>
+        </div>
+        <p class="rsc-band-line">Band <span class="rsc-band" id="rsc-band">—</span></p>
+        <p class="notice rsc-prov-note">Provisional — not validated. A research idea is never “bad”.</p>
+        <div class="rsc-rows">
+          <div class="rsc-row" data-key="originality">
+            <span class="rsc-label">Originality</span>
+            <span class="rsc-meter" aria-hidden="true"></span>
+            <span class="rsc-val"></span>
+          </div>
+          <div class="rsc-row" data-key="methodology">
+            <span class="rsc-label">Methodology</span>
+            <span class="rsc-meter" aria-hidden="true"></span>
+            <span class="rsc-val"></span>
+          </div>
+          <div class="rsc-row" data-key="ethics">
+            <span class="rsc-label">Ethics <span class="rsc-note">computed · excluded from band</span></span>
+            <span class="rsc-meter" aria-hidden="true"></span>
+            <span class="rsc-val"></span>
+          </div>
+          <div class="rsc-row" data-key="literature">
+            <span class="rsc-label">Literature</span>
+            <span class="rsc-val rsc-na-text">not assessed (awaiting RAG)</span>
+          </div>
+          <div class="rsc-row" data-key="statistics">
+            <span class="rsc-label">Statistics</span>
+            <span class="rsc-val rsc-na-text">not assessed (awaiting RAG)</span>
+          </div>
+        </div>
+        <p class="notice" id="rsc-caveat" hidden></p>
       </div>
       <div class="cited" id="cited" hidden>
         <h2>Cited in the verdict</h2>
@@ -209,6 +268,60 @@ function workItem(w) {
   return li;
 }
 
+// Research scorecard (RT-49). Fixed labels live in the markup; only numbers,
+// states and the caveat are set here, always via textContent. Absent (e.g. the
+// recorded example, or an older response) hides the block entirely.
+function rscIsScored(c) {
+  return (c.state === "scored" || c.state === "excluded") && typeof c.score === "number";
+}
+
+function rscValueText(c, scale) {
+  if (rscIsScored(c)) return c.score + " / " + scale;
+  if (c.state === "insufficient-evidence") return "insufficient evidence";
+  if (c.state === "not-assessed") return "not assessed (" + (c.note || "awaiting RAG") + ")";
+  return "—";
+}
+
+function renderMeter(meter, c, scale) {
+  meter.replaceChildren();
+  const scored = rscIsScored(c);
+  meter.hidden = !scored;
+  if (!scored) return;
+  for (let i = 0; i < scale; i++) {
+    const seg = document.createElement("span");
+    if (i < c.score) seg.className = "on";
+    meter.append(seg);
+  }
+}
+
+function renderScorecard(sc) {
+  const box = $("research-scorecard");
+  if (!sc) { box.hidden = true; return; }
+  box.hidden = false;
+
+  const scale = sc.scale || 5;
+  if (!sc.available) $("rsc-band").textContent = "unavailable";
+  else if (sc.band_state === "scored" && typeof sc.band === "number") $("rsc-band").textContent = sc.band.toFixed(1) + " / " + scale;
+  else $("rsc-band").textContent = "insufficient evidence";
+
+  const byKey = {};
+  for (const c of sc.criteria || []) byKey[c.key] = c;
+  for (const key of ["originality", "methodology", "ethics"]) {
+    const row = box.querySelector('.rsc-row[data-key="' + key + '"]');
+    if (!row) continue;
+    const c = byKey[key] || { state: "insufficient-evidence" };
+    const val = row.querySelector(".rsc-val");
+    renderMeter(row.querySelector(".rsc-meter"), c, scale);
+    val.textContent = rscValueText(c, scale);
+    val.classList.toggle("rsc-na-text", c.state === "insufficient-evidence");
+  }
+
+  const caveat = $("rsc-caveat");
+  const text = sc.caveat || (sc.available ? "" : "Scorecard unavailable for this run.");
+  caveat.textContent = text;
+  caveat.hidden = !text;
+}
+
 function renderReport(r) {
   $("claim").textContent = r.claim;
   $("method").textContent = r.method;
@@ -216,6 +329,7 @@ function renderReport(r) {
   $("verdict").textContent = r.verdict;
   $("truncation-note").hidden = !r.truncated;
   $("recorded-banner").hidden = r.recorded !== true;
+  renderScorecard(r.scorecard);
 
   // Evidence scorecard: factual counts from the response, no verdict parsing.
   $("sc-found").textContent = r.related.length;

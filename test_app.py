@@ -40,9 +40,30 @@ class FakeGraph:
         return FAKE_STATE
 
 
+# RT-49: a stub Research scorecard so /analyse tests stay offline (no Haiku
+# call). Tests that care about the scorer override build_scorecard themselves.
+FAKE_CARD = {
+    "provisional": True,
+    "scale": 5,
+    "available": True,
+    "band": 3.5,
+    "band_state": "scored",
+    "criteria": [
+        {"key": "originality", "label": "Originality", "state": "scored", "score": 4},
+        {"key": "methodology", "label": "Methodology", "state": "scored", "score": 3},
+        {"key": "ethics", "label": "Ethics", "state": "excluded", "score": 2, "note": "computed · excluded from band"},
+        {"key": "literature", "label": "Literature", "state": "not-assessed", "score": None, "note": "awaiting RAG"},
+        {"key": "statistics", "label": "Statistics", "state": "not-assessed", "score": None, "note": "awaiting RAG"},
+    ],
+    "caveat": "",
+    "truncated": False,
+}
+
+
 @pytest.fixture
 def client(monkeypatch):
     monkeypatch.setattr(app_module, "build_graph", lambda: FakeGraph())
+    monkeypatch.setattr(app_module.scorecard, "build_scorecard", lambda *a, **k: FAKE_CARD)
     return TestClient(app_module.app)
 
 
@@ -428,3 +449,91 @@ def test_index_page_shows_the_venture_verdict_path(client):
     html = client.get("/").text
     assert "one of five dimensions of the full venture verdict" in html
     assert "scientific credibility, novelty, feasibility, competition, market" in html
+
+
+# RT-49: the additive Research scorecard on /analyse and on the served page.
+# The scorer is stubbed (the client fixture fakes build_scorecard); its own
+# mapping is covered offline in test_scorecard.py and in the real-browser check.
+
+
+def test_analyse_carries_the_additive_scorecard_object(client):
+    body = _upload(client, "paper.txt", b"Some paper text.").json()
+    assert body["scorecard"] == FAKE_CARD
+
+
+def test_the_scorecard_is_additive_existing_fields_unchanged(client):
+    body = _upload(client, "paper.txt", b"Some paper text.").json()
+    # every pre-RT-49 field is exactly as before; scorecard is the only addition
+    assert body["claim"] == "A claim."
+    assert body["method"] == "A method."
+    assert body["result"] == "A result."
+    assert body["verdict"] == "Overlaps with [1]."
+    assert body["truncated"] is False
+    assert set(body) == {"claim", "method", "result", "related", "verdict", "truncated", "scorecard"}
+
+
+def test_the_scorer_sees_the_related_works_with_their_abstracts(client, monkeypatch):
+    seen = {}
+
+    def spy(extracted, related, paper_text, truncated):
+        seen["related"] = related
+        seen["paper_text"] = paper_text
+        return FAKE_CARD
+
+    monkeypatch.setattr(app_module.scorecard, "build_scorecard", spy)
+    _upload(client, "paper.txt", b"Some paper text.")
+    # the scorer must get the full related works (abstract text intact), not the
+    # trimmed /analyse view, so it can judge originality against prior work
+    assert seen["related"][0]["abstract"] == "Has one."
+    assert "Some paper text." in seen["paper_text"]
+
+
+def test_a_scorer_failure_does_not_fail_analyse(client, monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("scorer blew up: secret-host:9000")
+
+    monkeypatch.setattr(app_module.scorecard, "build_scorecard", boom)
+    r = _upload(client, "paper.txt", b"Some paper text.")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["verdict"] == "Overlaps with [1]."  # the rest of the Report survives
+    assert body["scorecard"]["available"] is False
+    assert "secret-host" not in r.text  # no internal detail leaks
+
+
+def test_index_page_has_the_research_scorecard_container(client):
+    assert 'id="research-scorecard"' in client.get("/").text
+
+
+def test_index_page_shows_the_research_criterion_labels(client):
+    html = client.get("/").text
+    for label in ("Originality", "Methodology", "Ethics", "Literature", "Statistics"):
+        assert label in html
+
+
+def test_index_page_marks_the_research_scorecard_provisional(client):
+    html = client.get("/").text
+    assert 'class="rsc-prov-chip"' in html
+    assert "provisional" in html.lower()
+
+
+def test_index_page_labels_the_scorecard_not_validated(client):
+    # GLOSSARY + RT-49 AC: scores are labelled "provisional / not validated",
+    # not merely "provisional".
+    assert "not validated" in client.get("/").text.lower()
+
+
+def test_index_page_shows_not_assessed_awaiting_rag(client):
+    html = client.get("/").text
+    assert "not assessed" in html.lower()
+    assert "awaiting RAG" in html
+
+
+def test_index_page_has_a_research_scorecard_caveat_element(client):
+    assert 'id="rsc-caveat"' in client.get("/").text
+
+
+def test_index_page_uses_no_red_amber_green_tier_words_in_the_scorecard(client):
+    html = client.get("/").text
+    for tier in (">good<", ">bad<", ">poor<", ">strong<", ">weak<"):
+        assert tier not in html.lower()
