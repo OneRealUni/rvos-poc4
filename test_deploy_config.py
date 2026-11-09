@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 # httpx is only there for the FastAPI TestClient.
 DEV_ONLY = {"pytest", "ruff", "reportlab", "httpx", "uvicorn"}
-UPLOADABLE = {"app.py", "rvos_poc.py", "requirements.txt", ".python-version", "static", "sample"}
+UPLOADABLE = {"app.py", "rvos_poc.py", "scorecard.py", "requirements.txt", ".python-version", "static", "sample"}
 
 
 def package_names(path):
