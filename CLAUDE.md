@@ -25,8 +25,11 @@ Standing rules from the owner (see HANDOVER.md).
 - Stage files by name. Never `git add .`.
 - Never commit anything under `Docs/Test/` (NDA papers; the repo is public).
 - Locally, never run bare `pytest`: `.env` and the `Docs/Test/` fixtures are
-  present, so it runs the four live reasoning tests and spends API credit.
-  Name the files: `pytest -v test_loading.py test_app.py test_pipeline_offline.py test_repo_hygiene.py`.
+  present, so it runs the four live reasoning tests (in `test_rvos_poc.py`) and
+  spends API credit. Name the files — this is the full offline-safe set (every
+  test file except the live `test_rvos_poc.py`), and it must match what CI runs
+  with bare `pytest`, so add any new test file here too:
+  `pytest -v test_loading.py test_app.py test_pipeline_offline.py test_repo_hygiene.py test_scorecard.py test_deploy_config.py test_daily_cap.py`.
 - Keep NDA fixture file names, paper titles and author names out of tracked
   files, commit messages and tracker/handover docs. The fixture paths
   (`RVOS_FIXTURE_OVERLAP`, `RVOS_FIXTURE_NOVEL`) and the terms to keep out
