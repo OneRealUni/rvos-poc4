@@ -31,6 +31,11 @@ Standing rules from the owner (see HANDOVER.md).
   `pyproject.toml`) is the single source of truth, so a new test file is covered
   with nothing to add here. CI runs bare `pytest -v`; the live tests skip there
   (no `.env`, no fixtures).
+- Git hooks are tracked in `.githooks/` (not `.git/hooks/`). Enable them once
+  per clone: `git config core.hooksPath .githooks`. `pre-commit` runs `ruff`;
+  `pre-push` runs `ruff` + `pytest -m "not live"` before code leaves the
+  machine. Both use the repo `venv` interpreter (plain `python` is not reliably
+  the venv). Bypass with `--no-verify` only deliberately.
 - Keep NDA fixture file names, paper titles and author names out of tracked
   files, commit messages and tracker/handover docs. The fixture paths
   (`RVOS_FIXTURE_OVERLAP`, `RVOS_FIXTURE_NOVEL`) and the terms to keep out

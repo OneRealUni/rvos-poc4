@@ -1,0 +1,11 @@
+#!/bin/sh
+# Fast gate before each commit: lint only. The offline suite is too slow to run
+# on every commit, so it runs on pre-push. Bypass with --no-verify if you must.
+# Plain `python` is not reliably the repo venv, so prefer the venv interpreter.
+if [ -x venv/Scripts/python.exe ]; then PY=venv/Scripts/python.exe
+elif [ -x venv/bin/python ]; then PY=venv/bin/python
+else PY=python; fi
+"$PY" -m ruff check . || {
+    echo "pre-commit blocked: ruff found issues above." >&2
+    exit 1
+}

@@ -1,0 +1,17 @@
+#!/bin/sh
+# Gate before code leaves the machine: lint + the offline-safe test set.
+# "pytest -m 'not live'" deselects the live reasoning tests, so no API spend.
+# This is where the deploy-allowlist and test-drift guards catch a regression
+# before CI or prod. Bypass with --no-verify only when you know why.
+# Plain `python` is not reliably the repo venv, so prefer the venv interpreter.
+if [ -x venv/Scripts/python.exe ]; then PY=venv/Scripts/python.exe
+elif [ -x venv/bin/python ]; then PY=venv/bin/python
+else PY=python; fi
+"$PY" -m ruff check . || {
+    echo "pre-push blocked: ruff found issues above." >&2
+    exit 1
+}
+"$PY" -m pytest -m "not live" || {
+    echo "pre-push blocked: offline tests failed above." >&2
+    exit 1
+}
