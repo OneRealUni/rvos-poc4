@@ -8,6 +8,7 @@ not cover, and those do not cover .env or Docs/ (which holds NDA papers), so
 .vercelignore is an allowlist.
 """
 
+import ast
 import re
 from pathlib import Path
 
@@ -47,3 +48,32 @@ def test_vercelignore_allows_only_the_app_files():
 
 def test_vercelignore_ships_the_sample_folder():
     assert "!sample" in (ROOT / ".vercelignore").read_text(encoding="utf-8").splitlines()
+
+
+def vercelignore_allowlist():
+    lines = (ROOT / ".vercelignore").read_text(encoding="utf-8").splitlines()
+    rules = [line.strip() for line in lines if line.strip() and not line.strip().startswith("#")]
+    return {rule[1:] for rule in rules[1:] if rule.startswith("!")}
+
+
+def app_local_imports():
+    """Top-level modules app.py imports that are local .py files in the repo root."""
+    tree = ast.parse((ROOT / "app.py").read_text(encoding="utf-8"))
+    names = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            names.add(node.module.split(".")[0])
+    return {name for name in names if (ROOT / f"{name}.py").exists()}
+
+
+def test_vercelignore_ships_every_local_module_app_imports():
+    # A local module app.py imports but the allowlist omits is silently dropped
+    # from the deploy -> ModuleNotFoundError -> 500 on every route (the build
+    # still passes, since it never imports the app). This ties the allowlist to
+    # the actual imports so a new runtime module cannot slip through again.
+    missing = {f"{name}.py" for name in app_local_imports()} - vercelignore_allowlist()
+    assert not missing, (
+        f"app.py imports these local modules but .vercelignore omits them: {sorted(missing)}"
+    )
