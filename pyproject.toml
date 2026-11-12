@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+# Register the `live` marker so `pytest -m "not live"` is the single, drift-proof
+# way to run the offline-safe set. conftest.py applies it to test_rvos_poc.py.
+markers = [
+    "live: calls the live reasoning pipeline (real API + NDA fixtures); excluded by `pytest -m 'not live'`",
+]
