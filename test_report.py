@@ -6,6 +6,9 @@ stubbed, so the Report shape is asserted directly at the module seam rather than
 through HTTP and a fake graph.
 """
 
+import json
+from pathlib import Path
+
 import pytest
 
 import report
@@ -112,3 +115,17 @@ def test_a_scorer_failure_degrades_to_the_unavailable_card_not_an_error(monkeypa
     assert rep["scorecard"] == scorecard.unavailable_scorecard(False)
     assert rep["scorecard"]["available"] is False
     assert rep["verdict"] == "Overlaps with [1]."  # the rest of the Report survives
+
+
+def test_the_recorded_sample_matches_the_report_shape(stub_scorecard):
+    """The committed recorded sample carries exactly the keys build_report
+    produces -- including a scorecard object -- so the fixture can never again
+    silently drift from the live /analyse shape. Supersedes the `>=` superset
+    check that used to live in test_app.py and never listed `scorecard`."""
+    path = Path(report.__file__).parent / "sample" / "recorded_report.json"
+    recorded = json.loads(path.read_text(encoding="utf-8"))
+    built = report.build_report(FAKE_RESULT, "short text")
+    assert set(recorded) == set(built)
+    assert set(recorded["scorecard"]) == set(scorecard.unavailable_scorecard(False))
+    for work in recorded["related"]:
+        assert set(work) == {"n", "title", "year", "url", "has_abstract"}

@@ -338,16 +338,6 @@ def test_sample_routes_need_no_access_code(client, sample_dir, monkeypatch):
     assert client.get("/sample/recorded").status_code == 200
 
 
-def test_a_committed_recorded_report_has_every_report_field():
-    path = Path(app_module.SAMPLE_DIR) / "recorded_report.json"
-    if not path.is_file():
-        pytest.skip("no recorded report committed yet")
-    report = json.loads(path.read_text(encoding="utf-8"))
-    assert set(report) >= {"claim", "method", "result", "related", "verdict", "truncated"}
-    for work in report["related"]:
-        assert set(work) >= {"n", "title", "year", "url", "has_abstract"}
-
-
 def test_index_page_offers_the_sample_and_the_recorded_example(client):
     html = client.get("/").text
     assert 'id="use-sample"' in html

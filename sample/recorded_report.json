@@ -1,1 +1,109 @@
-{"claim":"Commonly used binary classification accuracy metrics—including the increasingly popular Matthews correlation coefficient (MCC)—are not actually independent of class prevalence or reference standard quality, so their apparent values can seriously misrepresent true classifier performance.","method":"The authors analyze and run simulations with realistic prevalence ranges and varying levels of imperfect reference standards (as found in fields like remote sensing and medicine) to compute apparent values of metrics such as recall, precision, specificity, NPV, J, F1, likelihood ratios, and MCC, comparing them to true accuracy.","result":"They show that all examined metrics, including MCC, shift substantially in magnitude and even direction depending on prevalence and reference standard imperfections, and that a classifier with essentially random (coin-toss) skill can yield a deceptively high apparent MCC.","related":[{"n":1,"title":"Challenges in the real world use of classification accuracy metrics: From recall and precision to the Matthews correlation coefficient","year":2023,"url":"https://openalex.org/W4387331153","has_abstract":true},{"n":2,"title":"Ground Truth in Classification Accuracy Assessment: Myth and Reality","year":2024,"url":"https://openalex.org/W4391884472","has_abstract":true},{"n":3,"title":"The reliability of acoustic classification models for determining avian vocalisation patterns","year":2025,"url":"https://openalex.org/W4417414788","has_abstract":true},{"n":4,"title":"Performance of Human Annotators in Object Detection and Segmentation of Remotely Sensed Data","year":2024,"url":"https://openalex.org/W4403752073","has_abstract":true},{"n":5,"title":"Intelligent Application for Predicting Diabetes Spread Risk in the World Based on Machine Learning","year":2025,"url":"https://openalex.org/W4410841326","has_abstract":true},{"n":6,"title":"AI image generation technology in ophthalmology: Use, misuse and future applications","year":2025,"url":"https://openalex.org/W4408500445","has_abstract":true},{"n":7,"title":"Unlocking Large-Scale Crop Field Delineation in Smallholder Farming Systems with Transfer Learning and Weak Supervision","year":2022,"url":"https://openalex.org/W4226028353","has_abstract":true},{"n":8,"title":"On class imbalance in machine learning-based taxa identification: A comparative analysis of mitigation strategies","year":2026,"url":"https://openalex.org/W7196945794","has_abstract":false}],"verdict":"The claim overlaps very substantially with source [1], \"Challenges in the real world use of classification accuracy metrics: From recall and precision to the Matthews correlation coefficient\" (2023). The abstract of [1] explicitly states that apparent accuracy can differ greatly from true accuracy due to variations in prevalence and use of an imperfect reference standard, and that it covers recall, precision, and the MCC specifically—this is essentially the same thesis, scope of metrics, and framing (prevalence + reference standard quality) as the claim under evaluation. Source [2], \"Ground Truth in Classification Accuracy Assessment: Myth and Reality\" (2024), also overlaps significantly: it explicitly discusses the false assumption of a perfect ground reference dataset, uses simulations of realistic scenarios, and examines effects of reference quality and class abundance on apparent accuracy—closely matching the METHOD and RESULT described in the claim.\n\nGiven this, the claim does not appear to be novel; it strongly resembles prior work by what is likely the same research program or authors, extending or reiterating findings already published in [1] and [2]. The specific mention of MCC and coin-toss classifiers yielding deceptively high apparent MCC could be an incremental addition, but the core argument—that prevalence and reference standard imperfections distort apparent accuracy metrics including MCC—is already present in [1]. The other retrieved sources ([3]–[7]) are unrelated or only tangentially relevant (annotation reliability, unrelated ML applications) and do not inform novelty assessment. Overall: significant overlap with [1] and [2], not insufficient evidence.","truncated":true}
+{
+  "claim": "Commonly used binary classification accuracy metrics, including the Matthews correlation coefficient (MCC), are not actually independent of class prevalence and reference-standard quality as often assumed, causing their apparent values to deviate substantially from true classification accuracy.",
+  "method": "The authors use simulated binary classification data with realistic parameters (e.g., from remote sensing applications) to compute multiple accuracy metrics (Recall, Precision, Specificity, NPV, J, F1, likelihood ratios, MCC) across varying levels of class prevalence and varying degrees of reference standard imperfection.",
+  "result": "All examined metrics, including MCC, varied substantially with prevalence and reference standard quality, with MCC sometimes being greatly over- or under-estimated and even showing a high apparent value for a classifier performing no better than random chance.",
+  "related": [
+    {
+      "n": 1,
+      "title": "Challenges in the real world use of classification accuracy metrics: From recall and precision to the Matthews correlation coefficient",
+      "year": 2023,
+      "url": "https://openalex.org/W4387331153",
+      "has_abstract": true
+    },
+    {
+      "n": 2,
+      "title": "Ground Truth in Classification Accuracy Assessment: Myth and Reality",
+      "year": 2024,
+      "url": "https://openalex.org/W4391884472",
+      "has_abstract": true
+    },
+    {
+      "n": 3,
+      "title": "On class imbalance in machine learning-based taxa identification: A comparative analysis of mitigation strategies",
+      "year": 2026,
+      "url": "https://openalex.org/W7163340345",
+      "has_abstract": true
+    },
+    {
+      "n": 4,
+      "title": "Landslide detection using deep learning models and remote sensing data",
+      "year": 2026,
+      "url": "https://openalex.org/W7225094989",
+      "has_abstract": true
+    },
+    {
+      "n": 5,
+      "title": "The reliability of acoustic classification models for determining avian vocalisation patterns",
+      "year": 2025,
+      "url": "https://openalex.org/W4417414788",
+      "has_abstract": true
+    },
+    {
+      "n": 6,
+      "title": "Performance of Human Annotators in Object Detection and Segmentation of Remotely Sensed Data",
+      "year": 2025,
+      "url": "https://openalex.org/W4408914414",
+      "has_abstract": true
+    },
+    {
+      "n": 7,
+      "title": "Automatic Assessment of L2 Speech Intelligibility and Pronunciation",
+      "year": 2026,
+      "url": "https://openalex.org/W7165770552",
+      "has_abstract": true
+    },
+    {
+      "n": 8,
+      "title": "Towards an Improved Understanding of Software Vulnerability Assessment Using Data-Driven Approaches",
+      "year": 2022,
+      "url": "https://openalex.org/W4288055453",
+      "has_abstract": true
+    }
+  ],
+  "verdict": "The claim shows substantial overlap with retrieved source [1], \"Challenges in the real world use of classification accuracy metrics: From recall and precision to the Matthews correlation coefficient\" (2023). The abstract of [1] explicitly states that \"the apparent accuracy assessed can differ greatly from the true accuracy\" and that \"mis-estimation of classification accuracy metrics and associated mis-interpretations are often due to variations in prevalence and the use of an imperfect reference standard\" — this is essentially the same core claim being evaluated, including the specific focus on MCC named in the title. This appears to be either the same paper or a very closely related prior publication by what looks like the same research group.\n\nSource [2], \"Ground Truth in Classification Accuracy Assessment: Myth and Reality\" (2024), reinforces this overlap, as it uses simulations of realistic scenarios to explore how ground reference quality and class abundance affect apparent classification accuracy — matching the claim's method (simulated data, varying prevalence and reference standard quality) almost exactly, though it does not explicitly mention MCC in the abstract excerpt.\n\nGiven these two sources, the claim does not appear novel; it closely replicates or extends work already published by (apparently) the same authors or research program, particularly [1], which already covers MCC, prevalence, and reference standard quality together. The remaining sources ([3]–[8]) are unrelated to this specific methodological claim about metric independence assumptions. Overall, this claim substantially overlaps with [1] and [2], and should not be treated as a novel contribution without clarifying how it differs from this closely related prior work.",
+  "truncated": true,
+  "scorecard": {
+    "provisional": true,
+    "scale": 5,
+    "available": true,
+    "band": 3.0,
+    "band_state": "scored",
+    "criteria": [
+      {
+        "key": "originality",
+        "label": "Originality",
+        "state": "scored",
+        "score": 2
+      },
+      {
+        "key": "methodology",
+        "label": "Methodology",
+        "state": "scored",
+        "score": 4
+      },
+      {
+        "key": "ethics",
+        "label": "Ethics",
+        "state": "excluded",
+        "score": 3,
+        "note": "computed · excluded from band"
+      },
+      {
+        "key": "literature",
+        "label": "Literature",
+        "state": "not-assessed",
+        "score": null,
+        "note": "awaiting RAG"
+      },
+      {
+        "key": "statistics",
+        "label": "Statistics",
+        "state": "not-assessed",
+        "score": null,
+        "note": "awaiting RAG"
+      }
+    ],
+    "caveat": "This paper was truncated: only the first 12,000 characters were scored, so later sections may be missed.",
+    "truncated": true
+  }
+}
