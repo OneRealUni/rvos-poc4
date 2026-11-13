@@ -17,7 +17,9 @@ from docx import Document
 from fastapi.testclient import TestClient
 
 import app as app_module
+import report
 import rvos_poc
+import scorecard
 
 FAKE_STATE = {
     "extracted": {
@@ -63,7 +65,7 @@ FAKE_CARD = {
 @pytest.fixture
 def client(monkeypatch):
     monkeypatch.setattr(app_module, "build_graph", lambda: FakeGraph())
-    monkeypatch.setattr(app_module.scorecard, "build_scorecard", lambda *a, **k: FAKE_CARD)
+    monkeypatch.setattr(scorecard, "build_scorecard", lambda *a, **k: FAKE_CARD)
     return TestClient(app_module.app)
 
 
@@ -92,7 +94,7 @@ def test_related_work_is_numbered_and_flags_missing_abstracts(client):
 
 
 def test_response_flags_a_paper_longer_than_the_assessed_limit(client, monkeypatch):
-    monkeypatch.setattr(app_module, "MAX_PAPER_CHARS", 5)
+    monkeypatch.setattr(report, "MAX_PAPER_CHARS", 5)
     assert _upload(client, "paper.txt", b"Some paper text.").json()["truncated"] is True
 
 
@@ -480,7 +482,7 @@ def test_the_scorer_sees_the_related_works_with_their_abstracts(client, monkeypa
         seen["paper_text"] = paper_text
         return FAKE_CARD
 
-    monkeypatch.setattr(app_module.scorecard, "build_scorecard", spy)
+    monkeypatch.setattr(scorecard, "build_scorecard", spy)
     _upload(client, "paper.txt", b"Some paper text.")
     # the scorer must get the full related works (abstract text intact), not the
     # trimmed /analyse view, so it can judge originality against prior work
@@ -492,7 +494,7 @@ def test_a_scorer_failure_does_not_fail_analyse(client, monkeypatch):
     def boom(*a, **k):
         raise RuntimeError("scorer blew up: secret-host:9000")
 
-    monkeypatch.setattr(app_module.scorecard, "build_scorecard", boom)
+    monkeypatch.setattr(scorecard, "build_scorecard", boom)
     r = _upload(client, "paper.txt", b"Some paper text.")
     assert r.status_code == 200
     body = r.json()

@@ -25,13 +25,11 @@ import requests
 from fastapi import Depends, FastAPI, Header, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
-import scorecard
+from report import build_report
 from rvos_poc import (
-    MAX_PAPER_CHARS,
     PaperLoadError,
     build_graph,
     load_paper_text,
-    numbered_related,
 )
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
@@ -183,34 +181,4 @@ def analyse(file: UploadFile):
         log.error("Unexpected failure: %s", type(e).__name__)
         raise HTTPException(500, "Something went wrong. Please try again.") from e
 
-    extracted = result["extracted"]
-    truncated = len(paper_text) > MAX_PAPER_CHARS
-
-    # Additive Research scorecard (RT-49). The scorer gets the pipeline's
-    # internal related works -- abstract text intact -- not the trimmed view
-    # below. It never raises; the extra guard here means an unexpected failure
-    # still cannot fail /analyse. No secret or paper text reaches the log.
-    try:
-        card = scorecard.build_scorecard(extracted, result["related"], paper_text, truncated)
-    except Exception as e:  # noqa: BLE001 -- an optional signal must never fail /analyse
-        log.error("Scorecard step failed: %s", type(e).__name__)
-        card = scorecard.unavailable_scorecard(truncated)
-
-    return {
-        "claim": extracted["claim"],
-        "method": extracted["method"],
-        "result": extracted["result"],
-        "related": [
-            {
-                "n": n,
-                "title": w["title"],
-                "year": w["year"],
-                "url": w["id"],
-                "has_abstract": bool(w["abstract"]),
-            }
-            for n, w in numbered_related(result["related"])
-        ],
-        "verdict": result["verdict"],
-        "truncated": truncated,
-        "scorecard": card,
-    }
+    return build_report(result, paper_text)

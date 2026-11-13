@@ -2,6 +2,7 @@
 # exclusions do not cover .env or Docs/ (NDA papers, local handoff files).
 /*
 !app.py
+!report.py
 !rvos_poc.py
 !scorecard.py
 !requirements.txt
